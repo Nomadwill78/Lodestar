@@ -71,7 +71,7 @@ export default function HomeScreen() {
             </View>
             <TouchableOpacity onPress={() => router.push('/profile')} style={styles.avatarBtn}>
               <View style={styles.avatar}>
-                <Text style={styles.avatarText}>{(profile?.name ?? 'C')[0].toUpperCase()}</Text>
+                <Text style={styles.avatarText}>{(profile?.name?.[0] ?? 'C').toUpperCase()}</Text>
               </View>
             </TouchableOpacity>
           </View>
