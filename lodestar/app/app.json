@@ -1,0 +1,37 @@
+{
+  "expo": {
+    "name": "Lodestar",
+    "slug": "lodestar",
+    "scheme": "lodestar",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "backgroundColor": "#0B1026",
+      "resizeMode": "contain"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.nomad.lodestar"
+    },
+    "android": {
+      "package": "com.nomad.lodestar",
+      "adaptiveIcon": { "backgroundColor": "#0B1026" }
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      [
+        "expo-notifications",
+        { "color": "#E8B04B" }
+      ]
+    ],
+    "extra": {
+      "supabaseUrl": "https://YOUR_PROJECT_REF.supabase.co",
+      "supabaseAnonKey": "YOUR_ANON_KEY",
+      "eas": {
+        "projectId": "YOUR_EAS_PROJECT_ID"
+      }
+    }
+  }
+}

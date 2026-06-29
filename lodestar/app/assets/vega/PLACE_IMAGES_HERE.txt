@@ -1,0 +1,21 @@
+DROP VEGA'S PORTRAITS IN THIS FOLDER WITH THESE EXACT NAMES
+===========================================================
+
+App essentials:
+  headshot.png              1:1  centered headshot   (Today greeting, chat)
+  splash.png                9:16 full figure         (app splash)
+  empty-state.png           4:5  half-body offering   (first-run/blank states)
+
+Six emotional tiers (VegaAvatar.js auto-loads these by name):
+  tier-radiant.png          present   (day 0)
+  tier-attentive.png        gentle    (1-2)
+  tier-hopeful.png          reaching  (3-5)
+  tier-concerned.png        worried   (6-9)
+  tier-yearning.png         aching    (10-13)
+  tier-panicked-loving.png  meltdown  (14+)
+
+Once these PNGs are in this folder, VegaAvatar renders them automatically.
+No code change needed. Until then, it falls back to the gold star mark.
+
+Source: download each from the Higgsfield generation widgets. All were
+generated from the approved reference on clean indigo (#141B3C) backgrounds.
