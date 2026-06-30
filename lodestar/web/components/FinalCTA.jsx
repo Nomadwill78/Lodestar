@@ -5,13 +5,30 @@ import { useState } from "react";
 export default function FinalCTA() {
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
 
-  function submit(e) {
+  async function submit(e) {
     e.preventDefault();
-    if (!email.trim()) return;
-    // TODO: wire to the Missive list (Supabase table or email provider).
-    // For now this confirms client-side so the capture flow is real.
-    setSent(true);
+    if (!email.trim() || busy) return;
+    setBusy(true);
+    setErr("");
+    try {
+      const res = await fetch("/api/missive", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim() }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error === "invalid_email" ? "That email does not look right." : "Something went wrong. Try again in a moment.");
+      }
+      setSent(true);
+    } catch (e2) {
+      setErr(e2.message);
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
@@ -60,16 +77,19 @@ export default function FinalCTA() {
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="you@company.com"
                     aria-label="Email address"
-                    className="flex-1 rounded-full border border-white/15 bg-night/60 px-5 py-3 text-ink outline-none placeholder:text-muted focus:border-star/60"
+                    disabled={busy}
+                    className="flex-1 rounded-full border border-white/15 bg-night/60 px-5 py-3 text-ink outline-none placeholder:text-muted focus:border-star/60 disabled:opacity-60"
                   />
                   <button
                     type="submit"
-                    className="rounded-full bg-star px-6 py-3 font-semibold text-night transition-transform hover:scale-[1.03]"
+                    disabled={busy}
+                    className="rounded-full bg-star px-6 py-3 font-semibold text-night transition-transform hover:scale-[1.03] disabled:opacity-60"
                   >
-                    Subscribe
+                    {busy ? "Joining..." : "Subscribe"}
                   </button>
                 </form>
               )}
+              {err ? <p className="mt-3 text-sm text-care">{err}</p> : null}
             </div>
           </div>
 
