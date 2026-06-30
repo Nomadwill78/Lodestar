@@ -54,6 +54,13 @@ Deno.serve(async (req) => {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return json({ error: "unauthorized" }, 401);
 
+  // Cost guard: cap onboarding turns per member per hour. Generous enough
+  // that a real 5 to 7 exchange intake (with retries) never trips it.
+  const { data: allowed } = await supabase.rpc("consume_ai_rate_limit", {
+    p_action: "onboarding", p_max: 60, p_window_seconds: 3600,
+  });
+  if (allowed === false) return json({ error: "rate_limited" }, 429);
+
   let body: { messages?: { role: string; content: string }[] };
   try { body = await req.json(); } catch { return json({ error: "invalid JSON" }, 400); }
 

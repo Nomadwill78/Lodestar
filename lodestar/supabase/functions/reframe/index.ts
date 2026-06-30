@@ -163,6 +163,19 @@ Deno.serve(async (req) => {
     p_content: text, p_type: "setback", p_sentiment: "negative",
   });
 
+  // Guard the expensive Sonnet reframe against abuse. Crisis and neutral
+  // above are never rate limited. The limit is generous, so normal use never
+  // hits it; the entry is always saved either way.
+  const { data: allowed } = await supabase.rpc("consume_ai_rate_limit", {
+    p_action: "reframe", p_max: 30, p_window_seconds: 3600,
+  });
+  if (allowed === false) {
+    return json({
+      lane: "setback", reframe: null,
+      message: "Your entry is saved. We have worked through a lot together today, so let's let this one settle and come back to it with fresh eyes soon.",
+    });
+  }
+
   let context: unknown = {};
   try {
     const { data: { user } } = await supabase.auth.getUser();

@@ -6,6 +6,7 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
+    "icon": "./assets/icon.png",
     "splash": {
       "image": "./assets/vega/splash.png",
       "backgroundColor": "#0B1026",
@@ -17,14 +18,23 @@
     },
     "android": {
       "package": "com.nomad.lodestar",
-      "adaptiveIcon": { "backgroundColor": "#0B1026" }
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0B1026"
+      }
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
     },
     "plugins": [
       "expo-router",
       "expo-secure-store",
       [
         "expo-notifications",
-        { "color": "#E8B04B" }
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#E8B04B"
+        }
       ]
     ],
     "extra": {

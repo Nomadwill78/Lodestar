@@ -1,3 +1,4 @@
+import Link from "next/link";
 import StarMark from "./StarMark";
 
 export default function Footer() {
@@ -10,15 +11,18 @@ export default function Footer() {
           <span className="ml-2 text-sm text-muted">Manifesting for people who actually do the work.</span>
         </div>
         <nav className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted">
-          <a href="#vega" className="hover:text-ink">Meet Vega</a>
-          <a href="#science" className="hover:text-ink">The science</a>
-          <a href="#pricing" className="hover:text-ink">Pricing</a>
-          <a href="#start" className="hover:text-ink">Start free</a>
+          <Link href="/#vega" className="hover:text-ink">Meet Vega</Link>
+          <Link href="/#science" className="hover:text-ink">The science</Link>
+          <Link href="/#pricing" className="hover:text-ink">Pricing</Link>
+          <Link href="/privacy" className="hover:text-ink">Privacy</Link>
+          <Link href="/terms" className="hover:text-ink">Terms</Link>
+          <Link href="/disclaimer" className="hover:text-ink">Disclaimer</Link>
         </nav>
       </div>
       <div className="border-t border-white/5">
-        <div className="mx-auto max-w-content px-6 py-5 text-xs text-muted">
-          © {new Date().getFullYear()} Lodestar. A Nomad product.
+        <div className="mx-auto flex max-w-content flex-col gap-1 px-6 py-5 text-xs text-muted">
+          <p>© {new Date().getFullYear()} Lodestar. A Nomad product.</p>
+          <p>Lodestar is a personal development tool, not therapy or medical care. <Link href="/disclaimer" className="text-star underline">Learn more</Link>.</p>
         </div>
       </div>
     </footer>
