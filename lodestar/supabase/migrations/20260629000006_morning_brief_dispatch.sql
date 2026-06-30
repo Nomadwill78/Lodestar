@@ -79,7 +79,8 @@ $$;
 -- ---------------------------------------------------------------------
 -- 4. Schedule the sweep every 15 minutes. The cron job calls the Edge
 -- Function over HTTP via pg_net so generation happens off-database.
--- Replace <PROJECT_REF> and set the service key in Vault (see notes).
+-- The project ref below is set to rjucvqthsseegxlwryru; update it if you
+-- deploy to a different Supabase project, and set the service key in Vault.
 -- ---------------------------------------------------------------------
 create extension if not exists pg_net;
 
@@ -100,7 +101,7 @@ begin
   limit 1;
 
   perform net.http_post(
-    url     := 'https://<PROJECT_REF>.functions.supabase.co/morning-brief',
+    url     := 'https://rjucvqthsseegxlwryru.functions.supabase.co/morning-brief',
     headers := jsonb_build_object(
       'Content-Type', 'application/json',
       'Authorization', 'Bearer ' || v_key

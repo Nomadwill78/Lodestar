@@ -55,7 +55,7 @@ export default function Journal() {
 
         {err ? <Text style={{ color: "#E8848B", marginTop: 14 }}>{err}</Text> : null}
 
-        {result?.lane === "crisis" && <CrisisCard message={result.message} />}
+        {result?.lane === "crisis" && <CrisisCard message={result.message} resources={result.resources} />}
         {result?.lane === "setback" && <ReframeCard message={result.message} />}
         {result?.lane === "neutral" && (
           <Text style={{ color: C.muted, marginTop: 20, fontSize: 15 }}>{result.message}</Text>
@@ -74,21 +74,27 @@ function ReframeCard({ message }) {
   );
 }
 
-// Crisis card is deliberately calm and unbranded. Resources are tappable.
-// No streaks, no "next action", no coaching framing.
-function CrisisCard({ message }) {
+// Crisis card is deliberately calm and unbranded. Resources are tappable
+// and localized by the member's region (returned by the reframe function).
+// No streaks, no "next action", no coaching framing. Falls back to the US
+// and international lines if the server sent no resources.
+const FALLBACK_RESOURCES = [
+  { label: "Call or text 988", action: "tel:988" },
+  { label: "Find a helpline near you", action: "https://findahelpline.com" },
+];
+
+function CrisisCard({ message, resources }) {
+  const list = Array.isArray(resources) && resources.length ? resources : FALLBACK_RESOURCES;
   return (
     <View style={{ marginTop: 22, borderWidth: 1, borderColor: C.care, borderRadius: 16, backgroundColor: C.careSoft, padding: 20 }}>
       <Text style={{ color: C.ink, fontSize: 16, lineHeight: 25 }}>{message}</Text>
-      <View style={{ flexDirection: "row", gap: 12, marginTop: 18 }}>
-        <Pressable onPress={() => Linking.openURL("tel:988")}
-          style={{ flex: 1, borderWidth: 1, borderColor: C.care, borderRadius: 12, padding: 14, alignItems: "center" }}>
-          <Text style={{ color: C.care, fontWeight: "600" }}>Call 988</Text>
-        </Pressable>
-        <Pressable onPress={() => Linking.openURL("sms:741741?body=HOME")}
-          style={{ flex: 1, borderWidth: 1, borderColor: C.care, borderRadius: 12, padding: 14, alignItems: "center" }}>
-          <Text style={{ color: C.care, fontWeight: "600" }}>Text 741741</Text>
-        </Pressable>
+      <View style={{ gap: 12, marginTop: 18 }}>
+        {list.map((r) => (
+          <Pressable key={r.action} onPress={() => Linking.openURL(r.action)}
+            style={{ borderWidth: 1, borderColor: C.care, borderRadius: 12, padding: 14, alignItems: "center" }}>
+            <Text style={{ color: C.care, fontWeight: "600" }}>{r.label}</Text>
+          </Pressable>
+        ))}
       </View>
     </View>
   );

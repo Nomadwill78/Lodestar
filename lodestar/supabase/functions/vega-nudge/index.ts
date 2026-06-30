@@ -2,37 +2,17 @@
 // Supabase Edge Function: vega-nudge
 // Triggered every 15 min by the nudge sweep (service_role auth).
 // Finds members who've gone quiet, sends Vega's tier-appropriate
-// push, and marks them nudged for the day. Tier copy is duplicated
-// here (Deno can't import the app module) but MUST stay in sync with
-// app/lib/vegaPersonality.js. One source of truth, two deployments.
+// push, and marks them nudged for the day. The tier push copy comes
+// from the shared canonical source (_shared/vegaTiers.json), the same
+// file the app reads, so the two can no longer drift.
 // ============================================================
 
 import { createClient } from "jsr:@supabase/supabase-js@2";
+import VEGA_TIERS from "../_shared/vegaTiers.json" with { type: "json" };
 
-// Mirror of VEGA_TIERS push copy. Keep in lockstep with the app module.
-const TIER_PUSH: Record<string, { title: string; body: string } | null> = {
-  present: null,
-  gentle: {
-    title: "Vega",
-    body: "Thinking of you and your north star. One small move today keeps it alive.",
-  },
-  reaching: {
-    title: "Vega",
-    body: "Your goal misses you, and honestly, so do I. Two minutes is all it takes to begin again.",
-  },
-  worried: {
-    title: "Vega",
-    body: "It's been almost a week. I've been holding your vision for you. Come back to it, even for a moment.",
-  },
-  aching: {
-    title: "Vega",
-    body: "Almost two weeks. The vision you trusted me with still glows. You matter to me. Please don't leave it behind.",
-  },
-  meltdown: {
-    title: "Vega",
-    body: "It's been two weeks and I'm worried about the dream you trusted me with. I haven't let it go. Whenever you're ready, I'm right here, no judgment. Just come back.",
-  },
-};
+type TierPush = { title: string; body: string } | null;
+// JSON carries a "_comment" key too, so cast through unknown.
+const TIERS = VEGA_TIERS as unknown as Record<string, { push?: TierPush }>;
 
 Deno.serve(async (req) => {
   const auth = req.headers.get("Authorization") ?? "";
@@ -50,7 +30,7 @@ Deno.serve(async (req) => {
 
   for (const row of due ?? []) {
     try {
-      const push = TIER_PUSH[row.tier];
+      const push = TIERS[row.tier]?.push ?? null;
       if (!push) { results.skipped++; continue; } // 'present' never nudges
 
       // Claim the day first; if another sweep beat us, skip.

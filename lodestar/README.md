@@ -27,21 +27,26 @@ Authorization check.
 
 ## Setup order
 
-1. **Run migrations** 001 through 008 in order (`supabase db push`).
+1. **Run migrations** 001 through 011 in order (`supabase db push`).
 2. **Enable extensions** in the dashboard: `pg_cron`, `pg_net`. (`pgcrypto`,
    `vault` are enabled by the migrations or on by default.)
 3. **Store secrets**
    - `supabase secrets set ANTHROPIC_API_KEY=sk-ant-...`
    - Put the service role key in Vault as `service_role_key` (used by the
-     morning sweep). Dashboard: Project Settings > Vault.
-4. **Edit migration 006**: replace `<PROJECT_REF>` with your project ref.
+     morning and nudge sweeps). Dashboard: Project Settings > Vault.
+4. **Confirm the project ref**: migrations 006 and 010 are preset to
+   `rjucvqthsseegxlwryru`. If you deploy to a different Supabase project,
+   replace it in both files with your project ref.
 5. **Deploy functions**
    - `supabase functions deploy vega-onboarding`
    - `supabase functions deploy commit-life-map`
-   - `supabase functions deploy morning-brief --no-verify-jwt`
    - `supabase functions deploy reframe`
-   (morning-brief uses `--no-verify-jwt` because the cron sweep authenticates
-   with the service key in the header, not a user JWT.)
+   - `supabase functions deploy morning-brief --no-verify-jwt`
+   - `supabase functions deploy vega-nudge --no-verify-jwt`
+   (morning-brief and vega-nudge use `--no-verify-jwt` because the cron
+   sweeps authenticate with the service key in the header, not a user JWT.
+   The `_shared` folder is bundled automatically with the functions that
+   import it.)
 6. **Configure the app**: set `supabaseUrl` and `supabaseAnonKey` in
    `app/app.json` under `expo.extra`. Add your EAS `projectId` for push.
 7. **Run**: `cd app && npm install && npx expo start`.

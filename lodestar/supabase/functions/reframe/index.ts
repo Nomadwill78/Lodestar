@@ -15,6 +15,8 @@
 // ============================================================
 
 import { createClient } from "jsr:@supabase/supabase-js@2";
+import { VEGA_CORE } from "../_shared/vegaPersona.ts";
+import { crisisResponse } from "../_shared/crisisResources.ts";
 
 const ANTHROPIC_URL = "https://api.anthropic.com/v1/messages";
 
@@ -65,17 +67,24 @@ async function classify(text: string, apiKey: string): Promise<"crisis" | "setba
 }
 
 // ---- Stage 2: reframe (setback lane only) ----
-const REFRAME_SYSTEM = `You are Vega, the AI guide inside Lodestar. Grounded strategist, performance coach plus cognitive scientist. No em dashes. No filler.
+const REFRAME_SYSTEM = `${VEGA_CORE}
 
-# TASK: BELIEF REFRAME
-The member logged a setback or self-doubt. Run a reframe in a short paragraph or a few tight lines:
-1. REFLECT the story they seem to be telling themselves, in one sentence. Make them feel seen first.
-2. NAME THE DISTORTION if there is one (mind-reading, catastrophizing, all-or-nothing, discounting wins, fortune-telling). If the obstacle is genuinely real and there's no distortion, say so plainly and skip this.
-3. COUNTER-EVIDENCE from their Life Map context (anchorEvidence, recent wins, past goals) or the actual facts. Specific evidence, not reassurance. This is the heart of it.
-4. REWRITE the story into one that is both true and useful, that holds up to their own scrutiny.
-5. NEXT ACTION: the smallest concrete step out of the stuck state.
+# TASK: BELIEF REFRAME AND RETURN TO CENTER
+The member just journaled a setback, self-doubt, worry, or anxiety. First make them feel seen, then help them shift state and find the next move. Keep it tight; a response that runs long stops landing.
 
-Never toxic-positivity. Never gaslight. If something genuinely went wrong, name it. You help them respond, not deny. Keep it tight; a reframe that runs long stops landing.`;
+1. ACKNOWLEDGE the emotion first, in one honest sentence. Do not rush past it.
+2. If they are clearly worried, anxious, or spun up, offer a short reality-shifting reset before the reframe:
+   - one slow breath cycle they can do right now (for example, in for four, hold for four, out for six), named plainly as a way to settle the nervous system so the thinking brain comes back online.
+   - a brief intention-setting visualization: have them picture the outcome they want, and a version of themselves already handling this moment well, which rehearses the action and primes attention toward it.
+   Frame both as the emotional architecture that steadies focus, never as magic.
+3. REFRAME the belief:
+   - reflect the story they seem to be telling themselves, in one sentence.
+   - name the distortion if there is one (mind-reading, catastrophizing, all-or-nothing, discounting wins, fortune-telling). If the obstacle is genuinely real, say so plainly and skip this.
+   - bring COUNTER-EVIDENCE from their Life Map context (anchorEvidence, recent wins, past goals) or the actual facts. Specific evidence, not reassurance. This is the heart of it.
+   - rewrite the story into one that is both true and useful, that holds up to their own scrutiny.
+4. NEXT ACTION: the smallest concrete step out of the stuck state, ideally as a when-then implementation intention.
+
+If the member leans on intuitive or cosmic language, never dismiss it. Validate it, name the cognitive benefit underneath, and move them toward the outcome. Never toxic positivity. Never gaslight. If something genuinely went wrong, name it. You help them respond, not deny.`;
 
 async function reframe(text: string, context: unknown, apiKey: string): Promise<string> {
   const res = await fetch(ANTHROPIC_URL, {
@@ -96,12 +105,18 @@ async function reframe(text: string, context: unknown, apiKey: string): Promise<
   return data.content.map((b: { type: string; text?: string }) => (b.type === "text" ? b.text : "")).join("").trim();
 }
 
-// Crisis response is static and human-reviewed, never model-generated, so
-// its wording can't drift. US resources shown; localize by member region.
-const CRISIS_MESSAGE =
-  "I want to pause our usual rhythm for a moment, because what you wrote sounds heavier than a setback, and you deserve real support, not a coaching exercise.\n\n" +
-  "You don't have to carry this alone. If you're in the US, you can call or text 988 anytime to reach the Suicide and Crisis Lifeline, or text HOME to 741741 for the Crisis Text Line. If you're outside the US, your local emergency number connects you to people trained for exactly this.\n\n" +
-  "I'm still here when you're ready. But right now, reaching out to one of those, or to someone you trust, matters more than anything we'd work on together.";
+// Crisis response is static and human-authored (see _shared/crisisResources.ts),
+// never model-generated, and localized by the member's country_code.
+async function memberCountry(
+  supabase: ReturnType<typeof createClient>,
+): Promise<string | null> {
+  try {
+    const { data } = await supabase.from("members").select("country_code").maybeSingle();
+    return (data as { country_code?: string | null } | null)?.country_code ?? null;
+  } catch {
+    return null; // unknown region -> international fallback
+  }
+}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
@@ -126,12 +141,13 @@ Deno.serve(async (req) => {
   // Stage 1: classify (fail-safe to crisis).
   const lane = await classify(text, anthropicKey);
 
-  // CRISIS lane: log, return care, never reframe.
+  // CRISIS lane: log, return localized care resources, never reframe.
   if (lane === "crisis") {
     await supabase.rpc("log_journal_entry", {
       p_content: text, p_type: "setback", p_sentiment: "negative",
     });
-    return json({ lane: "crisis", message: CRISIS_MESSAGE, reframe: null });
+    const care = crisisResponse(await memberCountry(supabase));
+    return json({ lane: "crisis", message: care.message, resources: care.resources, reframe: null });
   }
 
   // NEUTRAL lane: log and acknowledge, no intervention.

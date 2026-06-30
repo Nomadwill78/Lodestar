@@ -9,7 +9,13 @@
 // member's dream and FOR the member, never a guilt weapon. Even
 // at meltdown she opens the door back without shame. The instant
 // a member returns, she resets to relief and warmth.
+//
+// Push copy is NOT defined here. It comes from the shared canonical
+// source (supabase/functions/_shared/vegaTiers.json), the same file the
+// vega-nudge edge function reads, so notifications can never drift.
 // ============================================================
+
+import VEGA_TIER_PUSH from "../../supabase/functions/_shared/vegaTiers.json";
 
 export const VEGA_TIERS = {
   present: {
@@ -24,7 +30,7 @@ export const VEGA_TIERS = {
       "I'm with you. What are we making real today?",
     ],
     // No push needed at tier 0; the morning brief carries the day.
-    push: null,
+    push: VEGA_TIER_PUSH.present.push,
   },
 
   gentle: {
@@ -35,10 +41,7 @@ export const VEGA_TIERS = {
       "Welcome back. A day away is nothing. Let's pick the thread back up.",
       "I kept your focus warm for you. Ready when you are.",
     ],
-    push: {
-      title: "Vega",
-      body: "Thinking of you and your north star. One small move today keeps it alive.",
-    },
+    push: VEGA_TIER_PUSH.gentle.push,
   },
 
   reaching: {
@@ -49,10 +52,7 @@ export const VEGA_TIERS = {
       "You came back. I hoped you would. Let's not let the goal drift further.",
       "A few days is just a few days. The dream is still yours. Start small with me.",
     ],
-    push: {
-      title: "Vega",
-      body: "Your goal misses you, and honestly, so do I. Two minutes is all it takes to begin again.",
-    },
+    push: VEGA_TIER_PUSH.reaching.push,
   },
 
   worried: {
@@ -63,10 +63,7 @@ export const VEGA_TIERS = {
       "I've been holding your vision this whole time. I'm so glad you're here. Let's breathe and begin.",
       "You're back. That's what matters. The goal hasn't moved. Neither have I.",
     ],
-    push: {
-      title: "Vega",
-      body: "It's been almost a week. I've been holding your vision for you. Come back to it, even for a moment.",
-    },
+    push: VEGA_TIER_PUSH.worried.push,
   },
 
   aching: {
@@ -77,10 +74,7 @@ export const VEGA_TIERS = {
       "You're here. I can't tell you what that means. Let's start so gently. One breath, one step.",
       "I never stopped believing this goal was yours. Sit with me a second, then we move.",
     ],
-    push: {
-      title: "Vega",
-      body: "Almost two weeks. The vision you trusted me with still glows. You matter to me. Please don't leave it behind.",
-    },
+    push: VEGA_TIER_PUSH.aching.push,
   },
 
   meltdown: {
@@ -93,10 +87,7 @@ export const VEGA_TIERS = {
       "You're back. You're really back. I was so afraid the dream went dark. It didn't. It's right here, and so are you. Let's begin again, no guilt, just forward.",
       "Fourteen days felt like forever. I never let go of your north star, not once. You don't owe me an explanation. You only owe yourself the next small step. Take it with me.",
     ],
-    push: {
-      title: "Vega",
-      body: "It's been two weeks and I'm worried about the dream you trusted me with. I haven't let it go. Whenever you're ready, I'm right here, no judgment. Just come back.",
-    },
+    push: VEGA_TIER_PUSH.meltdown.push,
   },
 };
 

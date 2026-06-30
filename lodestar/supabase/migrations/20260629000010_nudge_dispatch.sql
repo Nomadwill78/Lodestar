@@ -73,7 +73,7 @@ declare v_key text;
 begin
   select decrypted_secret into v_key from vault.decrypted_secrets where name = 'service_role_key' limit 1;
   perform net.http_post(
-    url     := 'https://<PROJECT_REF>.functions.supabase.co/vega-nudge',
+    url     := 'https://rjucvqthsseegxlwryru.functions.supabase.co/vega-nudge',
     headers := jsonb_build_object('Content-Type','application/json','Authorization','Bearer ' || v_key),
     body    := '{}'::jsonb
   );

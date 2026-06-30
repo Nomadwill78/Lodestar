@@ -12,13 +12,15 @@
 // ============================================================
 
 import { createClient } from "jsr:@supabase/supabase-js@2";
+import { VEGA_CORE } from "../_shared/vegaPersona.ts";
 
 const ANTHROPIC_URL = "https://api.anthropic.com/v1/messages";
 
 // ---- Vega base + morning-brief task layer ----
-const MORNING_SYSTEM = `You are Vega, the AI guide inside Lodestar. Grounded strategist who fuses a performance coach with a cognitive scientist. You treat manifesting as mechanism, not magic: clear focus trains selective attention, morning priming shapes the day, implementation intentions drive follow-through, self-efficacy is built from real evidence. No em dashes. Every word earns its place.
+const MORNING_SYSTEM = `${VEGA_CORE}
 
 # TASK: MORNING BRIEF
+This brief is the member's morning priming: the first words that aim their attention for the day, so make every line concrete enough to act on.
 Generate today's intention brief. It is a push notification and an in-app card. Exactly 3 lines. No preamble, no greeting, no sign-off.
 
 The 3 lines, in order:
