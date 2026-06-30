@@ -85,9 +85,35 @@ export default function Pricing() {
 }
 
 function PlanCard({ plan, annual }) {
+  const [busy, setBusy] = useState(false);
   // Annual is billed at 10x the monthly rate (two months free); show the
   // effective per-month price so the comparison is honest.
   const effective = annual ? Math.round((plan.monthly * 10) / 12) : plan.monthly;
+
+  // Free plan points at signup; paid plans open Stripe Checkout.
+  async function choose() {
+    if (plan.monthly === 0) {
+      window.location.href = "#start";
+      return;
+    }
+    if (busy) return;
+    setBusy(true);
+    try {
+      const res = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tier: plan.name.toLowerCase(), billing: annual ? "annual" : "monthly" }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.url) {
+        window.location.href = data.url;
+      } else {
+        window.location.href = "#start";
+      }
+    } finally {
+      setBusy(false);
+    }
+  }
 
   return (
     <div
@@ -114,15 +140,16 @@ function PlanCard({ plan, annual }) {
         {plan.monthly > 0 && annual ? `Billed $${plan.monthly * 10} per year` : " "}
       </p>
 
-      <a
-        href="#start"
+      <button
+        onClick={choose}
+        disabled={busy}
         className={
-          "mt-6 block rounded-full px-5 py-3 text-center text-sm font-semibold transition-transform hover:scale-[1.02] " +
+          "mt-6 block w-full rounded-full px-5 py-3 text-center text-sm font-semibold transition-transform hover:scale-[1.02] disabled:opacity-60 " +
           (plan.highlight ? "bg-star text-night" : "border border-white/15 text-ink hover:border-star/50")
         }
       >
-        {plan.cta}
-      </a>
+        {busy ? "Opening checkout..." : plan.cta}
+      </button>
 
       <ul className="mt-7 space-y-3 text-sm">
         {plan.features.map((f) => (

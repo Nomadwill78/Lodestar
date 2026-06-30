@@ -40,6 +40,8 @@
     "extra": {
       "supabaseUrl": "https://YOUR_PROJECT_REF.supabase.co",
       "supabaseAnonKey": "YOUR_ANON_KEY",
+      "revenueCatIosKey": "",
+      "revenueCatAndroidKey": "",
       "eas": {
         "projectId": "YOUR_EAS_PROJECT_ID"
       }

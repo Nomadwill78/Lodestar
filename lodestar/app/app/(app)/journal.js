@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import { submitJournal } from "../../lib/submitJournal";
 import { useVega } from "../../lib/useVega";
+import { startUpgrade, isPurchasesAvailable } from "../../lib/purchases";
 
 const C = { night: "#0B1026", star: "#E8B04B", ink: "#EDEFF7", muted: "#8A93B8", line: "rgba(138,147,184,0.18)", care: "#7FA8E8", careSoft: "rgba(127,168,232,0.10)" };
 
@@ -57,6 +58,7 @@ export default function Journal() {
 
         {result?.lane === "crisis" && <CrisisCard message={result.message} resources={result.resources} />}
         {result?.lane === "setback" && <ReframeCard message={result.message} />}
+        {result?.lane === "limit" && <UpgradeCard message={result.message} />}
         {result?.lane === "neutral" && (
           <Text style={{ color: C.muted, marginTop: 20, fontSize: 15 }}>{result.message}</Text>
         )}
@@ -70,6 +72,41 @@ function ReframeCard({ message }) {
     <View style={{ marginTop: 22, borderWidth: 1, borderColor: C.star, borderRadius: 16, backgroundColor: "rgba(232,176,75,0.08)", padding: 18 }}>
       <Text style={{ color: C.star, fontSize: 11.5, letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 10 }}>Vega</Text>
       <Text style={{ color: C.ink, fontSize: 16, lineHeight: 24 }}>{message}</Text>
+    </View>
+  );
+}
+
+// Shown when a Free member is out of weekly reframes. The entry is already
+// saved; this offers the upgrade. The tier flip happens server-side via the
+// store webhook after a successful purchase.
+function UpgradeCard({ message }) {
+  const [busy, setBusy] = useState(false);
+  const [note, setNote] = useState("");
+
+  async function upgrade() {
+    if (busy) return;
+    setBusy(true); setNote("");
+    if (!isPurchasesAvailable()) {
+      setNote("Upgrades open soon. Thank you for your patience.");
+      setBusy(false);
+      return;
+    }
+    const res = await startUpgrade();
+    setBusy(false);
+    if (res.ok) setNote("Thank you. Your upgrade is processing and unlocks in a moment.");
+    else if (res.reason === "cancelled") setNote("");
+    else setNote("We couldn't start the upgrade just now. Try again shortly.");
+  }
+
+  return (
+    <View style={{ marginTop: 22, borderWidth: 1, borderColor: C.star, borderRadius: 16, backgroundColor: "rgba(232,176,75,0.08)", padding: 18 }}>
+      <Text style={{ color: C.star, fontSize: 11.5, letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 10 }}>Vega</Text>
+      <Text style={{ color: C.ink, fontSize: 16, lineHeight: 24 }}>{message}</Text>
+      <Pressable onPress={upgrade} disabled={busy}
+        style={{ backgroundColor: C.star, borderRadius: 12, padding: 14, alignItems: "center", marginTop: 16, opacity: busy ? 0.6 : 1 }}>
+        {busy ? <ActivityIndicator color={C.night} /> : <Text style={{ color: C.night, fontWeight: "600" }}>Upgrade to Aligned</Text>}
+      </Pressable>
+      {note ? <Text style={{ color: C.muted, marginTop: 12, fontSize: 14 }}>{note}</Text> : null}
     </View>
   );
 }

@@ -27,7 +27,7 @@ Authorization check.
 
 ## Setup order
 
-1. **Run migrations** 001 through 013 in order (`supabase db push`).
+1. **Run migrations** 001 through 015 in order (`supabase db push`).
 2. **Enable extensions** in the dashboard: `pg_cron`, `pg_net`. (`pgcrypto`,
    `vault` are enabled by the migrations or on by default.)
 3. **Store secrets**
@@ -43,10 +43,29 @@ Authorization check.
    - `supabase functions deploy reframe`
    - `supabase functions deploy morning-brief --no-verify-jwt`
    - `supabase functions deploy vega-nudge --no-verify-jwt`
-   (morning-brief and vega-nudge use `--no-verify-jwt` because the cron
-   sweeps authenticate with the service key in the header, not a user JWT.
-   The `_shared` folder is bundled automatically with the functions that
-   import it.)
+   - `supabase functions deploy revenuecat-webhook --no-verify-jwt`
+   - `supabase functions deploy stripe-webhook --no-verify-jwt`
+   (the cron sweeps and store webhooks use `--no-verify-jwt` because they
+   authenticate with a service key or a signing secret in the header, not a
+   user JWT. The `_shared` folder is bundled automatically with the
+   functions that import it.)
+
+### Billing setup (optional, for paid tiers)
+
+Free tier works with no billing config. To enable paid plans:
+
+- **Mobile (RevenueCat)**: create entitlements `aligned` and `founder`,
+  attach your App Store / Play products, set the webhook to the
+  `revenuecat-webhook` function, and `supabase secrets set
+  REVENUECAT_WEBHOOK_AUTH=...`. Put the public SDK keys in `app/app.json`
+  under `expo.extra.revenueCatIosKey` / `revenueCatAndroidKey`. Map
+  entitlements to tiers in `supabase/functions/_shared/billing.ts`.
+- **Web (Stripe)**: create products/prices, set the env vars in `web`
+  (see `web/.env.example`), point a Stripe webhook at the `stripe-webhook`
+  function, and `supabase secrets set STRIPE_WEBHOOK_SECRET=whsec_...`. Map
+  price IDs to tiers in `_shared/billing.ts`.
+- The free reframe quota is `FREE_WEEKLY_REFRAMES` in
+  `supabase/functions/reframe/index.ts` (default 3 per 7 days).
 6. **Configure the app**: set `supabaseUrl` and `supabaseAnonKey` in
    `app/app.json` under `expo.extra`. Add your EAS `projectId` for push.
 7. **Run**: `cd app && npm install && npx expo start`.

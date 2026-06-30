@@ -11,6 +11,7 @@ import { Stack, useRouter, useSegments } from "expo-router";
 import { View, ActivityIndicator } from "react-native";
 import { AuthProvider, useAuth } from "../context/AuthContext";
 import { registerForPush } from "../lib/registerForPush";
+import { configurePurchases } from "../lib/purchases";
 
 const NIGHT = "#0B1026";
 
@@ -33,9 +34,12 @@ function RouterGate() {
     }
   }, [session, hasLifeMap, loading, segments]);
 
-  // Register for push once a session exists.
+  // Register for push and configure billing once a session exists.
   useEffect(() => {
-    if (session?.user?.id) registerForPush(session.user.id);
+    if (session?.user?.id) {
+      registerForPush(session.user.id);
+      configurePurchases(session.user.id);
+    }
   }, [session?.user?.id]);
 
   if (loading) {

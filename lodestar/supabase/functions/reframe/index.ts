@@ -20,6 +20,9 @@ import { crisisResponse } from "../_shared/crisisResources.ts";
 
 const ANTHROPIC_URL = "https://api.anthropic.com/v1/messages";
 
+// Free tier gets this many reframes per rolling 7 days; paid tiers unlimited.
+const FREE_WEEKLY_REFRAMES = 3;
+
 const cors = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, content-type",
@@ -173,6 +176,18 @@ Deno.serve(async (req) => {
     return json({
       lane: "setback", reframe: null,
       message: "Your entry is saved. We have worked through a lot together today, so let's let this one settle and come back to it with fresh eyes soon.",
+    });
+  }
+
+  // Product paywall: the reframe is metered on Free, unlimited on paid tiers.
+  // The entry is already saved above; here we gate only the AI reframe.
+  const { data: quota } = await supabase.rpc("free_reframe_check", { p_weekly_max: FREE_WEEKLY_REFRAMES });
+  if (quota && quota.allowed === false) {
+    return json({
+      lane: "limit",
+      reframe: null,
+      message: `Your entry is saved. You have used all ${quota.limit} of this week's reframes on the free plan. Upgrade to Aligned for unlimited reframes, or your free reframes refresh in a few days.`,
+      quota,
     });
   }
 
