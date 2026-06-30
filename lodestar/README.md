@@ -27,7 +27,7 @@ Authorization check.
 
 ## Setup order
 
-1. **Run migrations** 001 through 016 in order (`supabase db push`).
+1. **Run migrations** 001 through 017 in order (`supabase db push`).
 2. **Enable extensions** in the dashboard: `pg_cron`, `pg_net`. (`pgcrypto`,
    `vault` are enabled by the migrations or on by default.)
 3. **Store secrets**
