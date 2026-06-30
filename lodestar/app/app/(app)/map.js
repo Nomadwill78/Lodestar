@@ -9,6 +9,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { View, Text, ScrollView, RefreshControl, ActivityIndicator } from "react-native";
 import { supabase } from "../../lib/supabaseClient";
+import VegaEmptyState from "../../lib/VegaEmptyState";
 
 const C = {
   night: "#0B1026", deep: "#141B3C", star: "#E8B04B", starSoft: "rgba(232,176,75,0.10)",
@@ -78,6 +79,10 @@ export default function MapScreen() {
     );
   }
 
+  // A map that exists but has no activity yet (just onboarded): show a warm
+  // welcome instead of a wall of empty sections.
+  const isFresh = !!map && goals.length === 0 && blockers.length === 0 && patterns.length === 0 && logs.length === 0;
+
   return (
     <ScrollView style={{ flex: 1, backgroundColor: C.night }}
       contentContainerStyle={{ padding: 22, paddingTop: 64, paddingBottom: 48 }}
@@ -86,11 +91,10 @@ export default function MapScreen() {
       <Text style={{ color: C.muted, fontSize: 13, letterSpacing: 1.5, textTransform: "uppercase" }}>Your Life Map</Text>
 
       {!map ? (
-        <View style={{ borderWidth: 1, borderColor: C.line, borderRadius: 16, padding: 22, marginTop: 18 }}>
-          <Text style={{ color: C.ink, fontSize: 16, lineHeight: 24 }}>
-            Your map appears here once you finish setting your north star with Vega.
-          </Text>
-        </View>
+        <VegaEmptyState
+          title="Your map starts here"
+          message="Once you set your north star with Vega, this is where it lives and grows."
+        />
       ) : (
         <>
           {/* North star hero */}
@@ -102,25 +106,34 @@ export default function MapScreen() {
             ) : null}
           </View>
 
-          <Momentum logs={logs} />
+          {isFresh ? (
+            <VegaEmptyState
+              title="The map is set. Now we fill it in."
+              message="As you log wins, set goals, and talk things through, your momentum and the patterns underneath show up right here."
+            />
+          ) : (
+            <>
+              <Momentum logs={logs} />
 
-          <Section title="Goals">
-            {goals.length === 0
-              ? <Empty text="No active goals yet. Vega will help you set the first." />
-              : goals.map((g) => <GoalCard key={g.id} goal={g} />)}
-          </Section>
+              <Section title="Goals">
+                {goals.length === 0
+                  ? <Empty text="No active goals yet. Vega will help you set the first." />
+                  : goals.map((g) => <GoalCard key={g.id} goal={g} />)}
+              </Section>
 
-          <Section title="Blockers">
-            {blockers.length === 0
-              ? <Empty text="Nothing in the way right now." />
-              : blockers.map((b) => <BlockerCard key={b.id} blocker={b} />)}
-          </Section>
+              <Section title="Blockers">
+                {blockers.length === 0
+                  ? <Empty text="Nothing in the way right now." />
+                  : blockers.map((b) => <BlockerCard key={b.id} blocker={b} />)}
+              </Section>
 
-          <Section title="Patterns Vega sees">
-            {patterns.length === 0
-              ? <Empty text="As you log, Vega surfaces the patterns underneath." />
-              : patterns.map((p) => <PatternCard key={p.id} pattern={p} />)}
-          </Section>
+              <Section title="Patterns Vega sees">
+                {patterns.length === 0
+                  ? <Empty text="As you log, Vega surfaces the patterns underneath." />
+                  : patterns.map((p) => <PatternCard key={p.id} pattern={p} />)}
+              </Section>
+            </>
+          )}
         </>
       )}
     </ScrollView>

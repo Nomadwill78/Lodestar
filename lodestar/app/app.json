@@ -7,6 +7,7 @@
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
     "splash": {
+      "image": "./assets/vega/splash.png",
       "backgroundColor": "#0B1026",
       "resizeMode": "contain"
     },
