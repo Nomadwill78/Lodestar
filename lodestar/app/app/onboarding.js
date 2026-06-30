@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { supabase } from "../lib/supabaseClient";
 import { commitLifeMap } from "../lib/commitLifeMap";
+import { saveDeviceLocale } from "../lib/saveDeviceLocale";
 import { useAuth } from "../context/AuthContext";
 import { useRouter } from "expo-router";
 
@@ -71,6 +72,9 @@ export default function Onboarding() {
     setCommitting(true);
     try {
       await commitLifeMap(map);
+      // Capture region + timezone from the device (best-effort, non-blocking)
+      // so crisis resources localize and briefs fire at the right local hour.
+      saveDeviceLocale();
       markOnboarded();
       router.replace("/(app)/today");
     } catch (e) {
