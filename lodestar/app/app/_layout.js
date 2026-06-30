@@ -12,6 +12,7 @@ import { View, ActivityIndicator } from "react-native";
 import { AuthProvider, useAuth } from "../context/AuthContext";
 import { registerForPush } from "../lib/registerForPush";
 import { configurePurchases } from "../lib/purchases";
+import { supabase } from "../lib/supabaseClient";
 
 const NIGHT = "#0B1026";
 
@@ -34,11 +35,13 @@ function RouterGate() {
     }
   }, [session, hasLifeMap, loading, segments]);
 
-  // Register for push and configure billing once a session exists.
+  // Register for push, configure billing, and reconcile any web-first
+  // purchase once a session exists.
   useEffect(() => {
     if (session?.user?.id) {
       registerForPush(session.user.id);
       configurePurchases(session.user.id);
+      supabase.rpc("reconcile_my_entitlements").catch(() => {});
     }
   }, [session?.user?.id]);
 

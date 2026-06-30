@@ -76,23 +76,9 @@ Deno.serve(async (req) => {
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
   );
 
-  // Map to a member: prefer the id carried from checkout, fall back to the
-  // billing email matching an existing member. (Web-first purchases by a
-  // not-yet-registered user need a pending-purchase reconciliation step;
-  // that is a documented follow-up.)
-  let memberId = memberFromObject(obj);
-  if (!memberId) {
-    const email = obj?.customer_details?.email ?? obj?.customer_email ?? null;
-    if (email) {
-      const { data } = await admin.from("members").select("id").eq("email", email).maybeSingle();
-      memberId = (data as { id?: string } | null)?.id ?? null;
-    }
-  }
-  if (!memberId) return new Response("no member mapping", { status: 200 });
-
+  // Resulting tier/status/period from the event.
   let tier: Tier = "free";
   let status = "active";
-
   if (type === "checkout.session.completed") {
     tier = tierFromObject(obj);
     status = "active";
@@ -109,15 +95,44 @@ Deno.serve(async (req) => {
 
   const periodEndSec = Number(obj.current_period_end ?? 0);
   const periodEnd = periodEndSec ? new Date(periodEndSec * 1000).toISOString() : null;
+  const email = obj?.customer_details?.email ?? obj?.customer_email ?? null;
 
-  const { error } = await admin.rpc("apply_subscription_state", {
-    p_member: memberId,
-    p_tier: tier,
-    p_provider: "stripe",
-    p_status: status,
-    p_period_end: periodEnd,
-  });
-  if (error) return new Response(error.message, { status: 500 });
+  // Resolve the member: id carried from checkout, else an existing member by
+  // billing email (case-insensitive).
+  let memberId = memberFromObject(obj);
+  if (!memberId && email) {
+    const { data } = await admin.from("members").select("id").ilike("email", email).maybeSingle();
+    memberId = (data as { id?: string } | null)?.id ?? null;
+  }
 
-  return new Response("ok", { status: 200 });
+  if (memberId) {
+    const { error } = await admin.rpc("apply_subscription_state", {
+      p_member: memberId,
+      p_tier: tier,
+      p_provider: "stripe",
+      p_status: status,
+      p_period_end: periodEnd,
+    });
+    if (error) return new Response(error.message, { status: 500 });
+    return new Response("ok", { status: 200 });
+  }
+
+  // Web-first purchase: the buyer has no account yet. Stash the entitlement
+  // by email; it is applied the moment they sign up (or via the self-reconcile
+  // RPC the app calls on load). Only store real upgrades.
+  if (email && tier !== "free") {
+    const { error } = await admin.from("pending_entitlements").upsert({
+      email: email.toLowerCase(),
+      tier,
+      provider: "stripe",
+      status,
+      period_end: periodEnd,
+      stripe_customer_id: typeof obj.customer === "string" ? obj.customer : null,
+      updated_at: new Date().toISOString(),
+    }, { onConflict: "email" });
+    if (error) return new Response(error.message, { status: 500 });
+    return new Response("pending stored", { status: 200 });
+  }
+
+  return new Response("no member mapping", { status: 200 });
 });
