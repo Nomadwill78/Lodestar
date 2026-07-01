@@ -63,6 +63,7 @@ export async function getUpgradeOptions() {
         title: p.product?.title ?? p.identifier,
         priceString: p.product?.priceString ?? "",
         description: p.product?.description ?? "",
+        packageType: p.packageType ?? "",   // e.g. ANNUAL, MONTHLY
       })),
     };
   } catch {

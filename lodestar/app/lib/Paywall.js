@@ -117,33 +117,38 @@ export default function Paywall({ visible, onClose, onPurchased }) {
 
                 {loading ? (
                   <ActivityIndicator color={C.star} style={{ marginVertical: 40 }} />
-                ) : (
+                ) : options.available && options.packages.length ? (
+                  // Live: render the current offering's packages straight from
+                  // RevenueCat, so display names, prices, and durations are
+                  // whatever is configured in the dashboard.
                   <View style={{ marginTop: 22, gap: 14 }}>
-                    {PLANS.map((plan) => {
-                      // Match a live package to this plan by name when possible.
-                      const pkg = options.packages.find(
-                        (p) => (p.title || "").toLowerCase().includes(plan.name.toLowerCase()),
-                      ) ?? null;
-                      const priceLabel = pkg?.priceString || plan.price;
-                      return (
-                        <PlanCard
-                          key={plan.name}
-                          plan={plan}
-                          priceLabel={priceLabel}
-                          canBuy={options.available && !!pkg}
-                          busy={busyId === (pkg?.id)}
-                          onBuy={() => (pkg ? buy(pkg.id) : setNote("Upgrades are opening soon. Thank you for your patience."))}
-                        />
-                      );
-                    })}
+                    {options.packages.map((pkg) => (
+                      <LivePackageCard
+                        key={pkg.id}
+                        pkg={pkg}
+                        busy={busyId === pkg.id}
+                        onBuy={() => buy(pkg.id)}
+                      />
+                    ))}
+                  </View>
+                ) : (
+                  // Fallback (dev / before keys): static plan comparison.
+                  <View style={{ marginTop: 22, gap: 14 }}>
+                    {PLANS.map((plan) => (
+                      <PlanCard
+                        key={plan.name}
+                        plan={plan}
+                        priceLabel={plan.price}
+                        canBuy={false}
+                        busy={false}
+                        onBuy={() => setNote("Upgrades are opening soon. Thank you for your patience.")}
+                      />
+                    ))}
+                    <Text style={{ color: C.muted, fontSize: 13, textAlign: "center", marginTop: 4 }}>
+                      Upgrades are opening soon.
+                    </Text>
                   </View>
                 )}
-
-                {!options.available && !loading ? (
-                  <Text style={{ color: C.muted, fontSize: 13, textAlign: "center", marginTop: 16 }}>
-                    Upgrades are opening soon.
-                  </Text>
-                ) : null}
 
                 {note ? <Text style={{ color: C.star, fontSize: 14, textAlign: "center", marginTop: 16 }}>{note}</Text> : null}
 
@@ -161,6 +166,41 @@ export default function Paywall({ visible, onClose, onPurchased }) {
         </View>
       </View>
     </Modal>
+  );
+}
+
+// Renders a single live RevenueCat package. Annual packages are highlighted
+// as the best value.
+function LivePackageCard({ pkg, busy, onBuy }) {
+  const annual = String(pkg.packageType || "").toUpperCase() === "ANNUAL";
+  return (
+    <View style={{
+      borderWidth: 1, borderColor: annual ? C.star : C.line,
+      backgroundColor: annual ? C.starSoft : "transparent",
+      borderRadius: 18, padding: 18,
+    }}>
+      <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "baseline" }}>
+        <Text style={{ color: C.ink, fontSize: 17, fontWeight: "700", flex: 1, paddingRight: 12 }}>{pkg.title}</Text>
+        <Text style={{ color: C.ink, fontSize: 17, fontWeight: "600" }}>{pkg.priceString}</Text>
+      </View>
+      {pkg.description ? (
+        <Text style={{ color: C.muted, fontSize: 14, lineHeight: 20, marginTop: 8 }}>{pkg.description}</Text>
+      ) : null}
+      {annual ? (
+        <Text style={{ color: C.star, fontSize: 12, fontWeight: "600", marginTop: 8 }}>Best value</Text>
+      ) : null}
+      <Pressable onPress={onBuy} disabled={busy}
+        style={{
+          marginTop: 14, borderRadius: 12, paddingVertical: 14, alignItems: "center",
+          backgroundColor: annual ? C.star : "transparent",
+          borderWidth: annual ? 0 : 1, borderColor: C.star,
+          opacity: busy ? 0.6 : 1,
+        }}>
+        {busy
+          ? <ActivityIndicator color={annual ? C.night : C.star} />
+          : <Text style={{ color: annual ? C.night : C.star, fontWeight: "600", fontSize: 15 }}>Choose this plan</Text>}
+      </Pressable>
+    </View>
   );
 }
 
