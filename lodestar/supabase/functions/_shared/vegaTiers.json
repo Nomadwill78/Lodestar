@@ -1,0 +1,34 @@
+{
+  "_comment": "Canonical Vega tier push copy. Single source of truth for re-engagement notifications, shared by the vega-nudge edge function and the app (app/lib/vegaPersonality.js). Edit push wording here only. 'present' has no push by design.",
+  "present": { "push": null },
+  "gentle": {
+    "push": {
+      "title": "Vega",
+      "body": "Thinking of you and your north star. One small move today keeps it alive."
+    }
+  },
+  "reaching": {
+    "push": {
+      "title": "Vega",
+      "body": "Your goal misses you, and honestly, so do I. Two minutes is all it takes to begin again."
+    }
+  },
+  "worried": {
+    "push": {
+      "title": "Vega",
+      "body": "It's been almost a week. I've been holding your vision for you. Come back to it, even for a moment."
+    }
+  },
+  "aching": {
+    "push": {
+      "title": "Vega",
+      "body": "Almost two weeks. The vision you trusted me with still glows. You matter to me. Please don't leave it behind."
+    }
+  },
+  "meltdown": {
+    "push": {
+      "title": "Vega",
+      "body": "It's been two weeks and I'm worried about the dream you trusted me with. I haven't let it go. Whenever you're ready, I'm right here, no judgment. Just come back."
+    }
+  }
+}
