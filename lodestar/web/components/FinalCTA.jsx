@@ -42,16 +42,16 @@ export default function FinalCTA() {
             </h2>
             <div className="mt-8 flex flex-wrap gap-4">
               <a
-                href="#start"
+                href="#waitlist"
                 className="rounded-full bg-star px-7 py-3.5 text-base font-semibold text-night transition-transform hover:scale-[1.03]"
               >
-                Start free
+                Join the waitlist
               </a>
               <a
                 href="#vega"
                 className="rounded-full border border-white/15 px-7 py-3.5 text-base font-semibold text-ink transition-colors hover:border-star/50 hover:text-star"
               >
-                Talk to Vega
+                Meet Vega
               </a>
             </div>
 

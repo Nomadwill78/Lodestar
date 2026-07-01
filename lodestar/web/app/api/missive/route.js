@@ -26,6 +26,10 @@ export async function POST(req) {
     return Response.json({ error: "invalid_email" }, { status: 400 });
   }
 
+  // Where the signup came from. Allowlisted so a caller can't set anything.
+  const ALLOWED_SOURCES = ["website", "waitlist"];
+  const source = ALLOWED_SOURCES.includes(body?.source) ? body.source : "website";
+
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!url || !anonKey) {
@@ -37,7 +41,7 @@ export async function POST(req) {
   // Insert, ignoring duplicates so a repeat signup still reads as success.
   const { error } = await supabase
     .from("missive_subscribers")
-    .upsert({ email, source: "website" }, { onConflict: "email", ignoreDuplicates: true });
+    .upsert({ email, source }, { onConflict: "email", ignoreDuplicates: true });
 
   if (error) {
     return Response.json({ error: "save_failed" }, { status: 500 });

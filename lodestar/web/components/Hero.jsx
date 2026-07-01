@@ -23,21 +23,21 @@ export default function Hero() {
 
           <div id="start" className="mt-9 flex flex-wrap items-center gap-4">
             <a
-              href="#pricing"
+              href="#waitlist"
               className="rounded-full bg-star px-6 py-3 text-base font-semibold text-night transition-transform hover:scale-[1.03]"
             >
-              Start free
+              Join the waitlist
             </a>
             <a
               href="#vega"
               className="rounded-full border border-white/15 px-6 py-3 text-base font-semibold text-ink transition-colors hover:border-star/50 hover:text-star"
             >
-              Talk to Vega
+              Meet Vega
             </a>
           </div>
 
           <p className="mt-5 text-sm text-muted">
-            No card to start. Your first morning brief is one conversation away.
+            Onboarding founders in small groups. Join the list for your invite.
           </p>
         </div>
 

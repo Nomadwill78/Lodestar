@@ -29,10 +29,10 @@ export default function Nav() {
             Sign in
           </a>
           <a
-            href="#start"
+            href="#waitlist"
             className="rounded-full bg-star px-4 py-2 text-sm font-semibold text-night transition-transform hover:scale-[1.03]"
           >
-            Start free
+            Join waitlist
           </a>
         </div>
       </div>

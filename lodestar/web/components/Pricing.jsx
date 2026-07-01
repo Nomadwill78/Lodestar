@@ -13,7 +13,7 @@ const PLANS = [
       "Your Life Map and north star",
       "Vega's emotional presence",
     ],
-    cta: "Start free",
+    cta: "Join the waitlist",
     highlight: false,
   },
   {
@@ -90,10 +90,11 @@ function PlanCard({ plan, annual }) {
   // effective per-month price so the comparison is honest.
   const effective = annual ? Math.round((plan.monthly * 10) / 12) : plan.monthly;
 
-  // Free plan points at signup; paid plans open Stripe Checkout.
+  // Free plan joins the waitlist; paid plans open Stripe Checkout when it is
+  // configured, otherwise fall back to the waitlist (pre-launch).
   async function choose() {
     if (plan.monthly === 0) {
-      window.location.href = "#start";
+      window.location.href = "#waitlist";
       return;
     }
     if (busy) return;
@@ -108,7 +109,7 @@ function PlanCard({ plan, annual }) {
       if (res.ok && data.url) {
         window.location.href = data.url;
       } else {
-        window.location.href = "#start";
+        window.location.href = "#waitlist";
       }
     } finally {
       setBusy(false);

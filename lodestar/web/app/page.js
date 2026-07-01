@@ -6,6 +6,7 @@ import DailyLoop from "../components/DailyLoop";
 import Science from "../components/Science";
 import LifeMap from "../components/LifeMap";
 import Proof from "../components/Proof";
+import Waitlist from "../components/Waitlist";
 import Pricing from "../components/Pricing";
 import FinalCTA from "../components/FinalCTA";
 import Footer from "../components/Footer";
@@ -22,6 +23,7 @@ export default function Home() {
         <Science />
         <LifeMap />
         <Proof />
+        <Waitlist />
         <Pricing />
         <FinalCTA />
       </main>
