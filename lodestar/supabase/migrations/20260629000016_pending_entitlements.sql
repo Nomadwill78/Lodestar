@@ -52,6 +52,13 @@ begin
 end;
 $$;
 
+-- Service-role only: it writes tier/subscription state, so a member client
+-- must not be able to call it directly. The signup trigger and the
+-- reconcile RPC below invoke it as definer, so this revoke does not affect
+-- them.
+revoke execute on function apply_pending_for(uuid, text) from public, anon, authenticated;
+grant  execute on function apply_pending_for(uuid, text) to service_role;
+
 -- ---------------------------------------------------------------------
 -- Self-reconcile: the app calls this once a session exists, as a backstop
 -- to the signup trigger (covers any email-casing or timing edge case).

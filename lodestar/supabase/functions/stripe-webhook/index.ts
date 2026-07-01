@@ -96,22 +96,33 @@ Deno.serve(async (req) => {
   const periodEndSec = Number(obj.current_period_end ?? 0);
   const periodEnd = periodEndSec ? new Date(periodEndSec * 1000).toISOString() : null;
   const email = obj?.customer_details?.email ?? obj?.customer_email ?? null;
+  const customerId = typeof obj.customer === "string" ? obj.customer : null;
 
-  // Resolve the member: id carried from checkout, else an existing member by
-  // billing email (case-insensitive).
+  // Resolve the member, in order:
+  //   1. id carried from checkout (metadata / client_reference_id)
+  //   2. the stored Stripe customer id (subscription.updated/deleted events
+  //      carry obj.customer but no email, so this is how they map after a
+  //      web-first signup has saved the customer id)
+  //   3. an existing member by billing email (case-insensitive)
   let memberId = memberFromObject(obj);
+  if (!memberId && customerId) {
+    const { data } = await admin.from("members").select("id").eq("stripe_customer_id", customerId).maybeSingle();
+    memberId = (data as { id?: string } | null)?.id ?? null;
+  }
   if (!memberId && email) {
     const { data } = await admin.from("members").select("id").ilike("email", email).maybeSingle();
     memberId = (data as { id?: string } | null)?.id ?? null;
   }
 
   if (memberId) {
+    // Persist the customer id so later events (which lack an email) can map.
     const { error } = await admin.rpc("apply_subscription_state", {
       p_member: memberId,
       p_tier: tier,
       p_provider: "stripe",
       p_status: status,
       p_period_end: periodEnd,
+      p_stripe_customer_id: customerId,
     });
     if (error) return new Response(error.message, { status: 500 });
     return new Response("ok", { status: 200 });
@@ -127,7 +138,7 @@ Deno.serve(async (req) => {
       provider: "stripe",
       status,
       period_end: periodEnd,
-      stripe_customer_id: typeof obj.customer === "string" ? obj.customer : null,
+      stripe_customer_id: customerId,
       updated_at: new Date().toISOString(),
     }, { onConflict: "email" });
     if (error) return new Response(error.message, { status: 500 });
