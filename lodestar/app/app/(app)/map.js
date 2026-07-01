@@ -7,9 +7,11 @@
 // ============================================================
 
 import { useCallback, useEffect, useState } from "react";
-import { View, Text, ScrollView, RefreshControl, ActivityIndicator } from "react-native";
+import { View, Text, ScrollView, RefreshControl, ActivityIndicator, Pressable } from "react-native";
 import { supabase } from "../../lib/supabaseClient";
 import VegaEmptyState from "../../lib/VegaEmptyState";
+import Paywall from "../../lib/Paywall";
+import { useTier } from "../../lib/useTier";
 
 const C = {
   night: "#0B1026", deep: "#141B3C", star: "#E8B04B", starSoft: "rgba(232,176,75,0.10)",
@@ -26,6 +28,8 @@ export default function MapScreen() {
   const [blockers, setBlockers] = useState([]);
   const [logs, setLogs] = useState([]);
   const [patterns, setPatterns] = useState([]);
+  const { isFree } = useTier();
+  const [paywallOpen, setPaywallOpen] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -134,8 +138,21 @@ export default function MapScreen() {
               </Section>
             </>
           )}
+
+          {isFree ? (
+            <Pressable onPress={() => setPaywallOpen(true)}
+              style={{ marginTop: 30, borderWidth: 1, borderColor: C.star, backgroundColor: C.starSoft, borderRadius: 16, padding: 18 }}>
+              <Text style={{ color: C.star, fontSize: 11.5, letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 6 }}>Aligned</Text>
+              <Text style={{ color: C.ink, fontSize: 16, lineHeight: 23 }}>
+                Unlock unlimited reframes, the evening review, and pattern detection.
+              </Text>
+              <Text style={{ color: C.star, fontSize: 14, fontWeight: "600", marginTop: 10 }}>See upgrade options</Text>
+            </Pressable>
+          ) : null}
         </>
       )}
+
+      <Paywall visible={paywallOpen} onClose={() => setPaywallOpen(false)} />
     </ScrollView>
   );
 }

@@ -48,24 +48,50 @@ export async function configurePurchases(memberId) {
   }
 }
 
-// Start an upgrade. Returns { ok, reason }. The tier flip is server-side
-// via the webhook; this only drives the store purchase sheet.
-export async function startUpgrade(packageIdentifier) {
+// List the current offering's packages for the paywall, normalized for
+// display. { available } is false when billing is not configured yet (no
+// key, Expo Go, or no offering), so the UI can show a static fallback.
+export async function getUpgradeOptions() {
+  if (!isPurchasesAvailable()) return { available: false, packages: [] };
+  try {
+    const offerings = await Purchases.getOfferings();
+    const pkgs = offerings?.current?.availablePackages ?? [];
+    return {
+      available: pkgs.length > 0,
+      packages: pkgs.map((p) => ({
+        id: p.identifier,
+        title: p.product?.title ?? p.identifier,
+        priceString: p.product?.priceString ?? "",
+        description: p.product?.description ?? "",
+      })),
+    };
+  } catch {
+    return { available: false, packages: [] };
+  }
+}
+
+// Purchase a specific package by identifier. The tier flip is server-side
+// via the RevenueCat webhook; this only drives the store purchase sheet.
+export async function purchasePackageById(packageIdentifier) {
   if (!isPurchasesAvailable()) return { ok: false, reason: "unavailable" };
   try {
     const offerings = await Purchases.getOfferings();
-    const current = offerings?.current;
-    const pkgs = current?.availablePackages ?? [];
-    if (!pkgs.length) return { ok: false, reason: "no_offerings" };
+    const pkgs = offerings?.current?.availablePackages ?? [];
     const pkg = packageIdentifier
       ? pkgs.find((p) => p.identifier === packageIdentifier) ?? pkgs[0]
       : pkgs[0];
+    if (!pkg) return { ok: false, reason: "no_offerings" };
     await Purchases.purchasePackage(pkg);
     return { ok: true };
   } catch (e) {
     if (e?.userCancelled) return { ok: false, reason: "cancelled" };
     return { ok: false, reason: "error" };
   }
+}
+
+// Convenience: buy the first available package (used by simple prompts).
+export async function startUpgrade(packageIdentifier) {
+  return purchasePackageById(packageIdentifier);
 }
 
 export async function restorePurchases() {
