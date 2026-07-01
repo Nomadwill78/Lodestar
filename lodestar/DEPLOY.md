@@ -192,6 +192,76 @@ the pending branch, not a real tier flip.)
 
 ---
 
+## 7. Deploy the marketing website (Vercel)
+
+The site lives in `lodestar/web` (Next.js App Router). Vercel is the simplest
+host; the steps below assume it.
+
+### Import the project
+
+1. Push this repo to GitHub (already done for the working branch).
+2. Vercel > **Add New > Project** > import the repo.
+3. Set **Root Directory** to `lodestar/web`. Vercel auto-detects Next.js;
+   leave the build command (`next build`) and output as defaults.
+
+Alternatively, from the CLI:
+```bash
+npm i -g vercel
+cd lodestar/web
+vercel            # first run links/creates the project
+vercel --prod     # production deploy
+```
+
+### Environment variables
+
+Vercel > Project > **Settings > Environment Variables** (set for Production and
+Preview). Mirror `web/.env.example`:
+
+| Variable | Value |
+|----------|-------|
+| `NEXT_PUBLIC_SUPABASE_URL` | `https://rjucvqthsseegxlwryru.supabase.co` |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | your anon key (Project Settings > API) |
+| `NEXT_PUBLIC_SITE_URL` | your public URL, e.g. `https://lodestar.app` |
+| `STRIPE_SECRET_KEY` | `sk_live_...` (or `sk_test_...` while testing) |
+| `STRIPE_PRICE_ALIGNED_MONTHLY` | the Stripe price id |
+| `STRIPE_PRICE_ALIGNED_ANNUAL` | the Stripe price id |
+| `STRIPE_PRICE_FOUNDER_MONTHLY` | the Stripe price id |
+| `STRIPE_PRICE_FOUNDER_ANNUAL` | the Stripe price id |
+
+Notes:
+- The `NEXT_PUBLIC_*` vars are read only in server route handlers here, but the
+  prefix is harmless. The anon key is safe to expose; the Missive table is RLS
+  insert-only.
+- `STRIPE_SECRET_KEY` and the price ids are server-only (no `NEXT_PUBLIC_`
+  prefix), so they never reach the browser.
+- The Stripe webhook secret is NOT set here. It lives on the Supabase
+  `stripe-webhook` function (step 3), because that function, not the website,
+  receives Stripe events.
+- Redeploy after changing env vars so they take effect.
+
+### Custom domain
+
+1. Vercel > Project > **Settings > Domains** > add your domain.
+2. Point DNS as Vercel instructs (usually an `A`/`ALIAS` for the apex and a
+   `CNAME` for `www`). HTTPS is provisioned automatically.
+3. Set `NEXT_PUBLIC_SITE_URL` to the final domain and redeploy, so Stripe
+   success/cancel redirects land on the right host.
+
+### Verify the site
+
+- Open the domain: all nine sections render; `/privacy`, `/terms`,
+  `/disclaimer` load.
+- **Missive**: submit an email in the footer form; confirm a row appears in
+  Supabase `missive_subscribers`.
+- **Checkout** (once Stripe env + prices are set): click a paid plan; you should
+  be redirected to Stripe Checkout. Complete it with test card
+  `4242 4242 4242 4242` and confirm the tier flip per step 6.
+- Check server logs under Vercel > Project > **Logs** if `/api/missive` or
+  `/api/checkout` returns an error (a `not_configured` response means an env
+  var is missing).
+
+---
+
 ## Quick reference
 
 | What | Where |
