@@ -15,12 +15,16 @@
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import { tierFromEntitlements, type Tier } from "../_shared/billing.ts";
 
-// Event types that mean "active/entitled" vs "no longer entitled".
+// Event types that mean "active/entitled" vs "access has actually ended".
 const ACTIVE = new Set([
   "INITIAL_PURCHASE", "RENEWAL", "PRODUCT_CHANGE", "UNCANCELLATION", "SUBSCRIPTION_EXTENDED",
 ]);
+// Only downgrade when access truly ends. CANCELLATION and BILLING_ISSUE do NOT
+// end access (the member keeps their tier until the paid period expires, and
+// billing issues run through a grace period), so they are intentionally
+// ignored here; EXPIRATION is the event that actually removes access.
 const INACTIVE = new Set([
-  "CANCELLATION", "EXPIRATION", "BILLING_ISSUE", "SUBSCRIPTION_PAUSED",
+  "EXPIRATION", "SUBSCRIPTION_PAUSED",
 ]);
 
 Deno.serve(async (req) => {
