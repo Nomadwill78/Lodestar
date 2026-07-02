@@ -262,6 +262,48 @@ Notes:
 
 ---
 
+## 8. Deploy the web version of the app (Expo web on Vercel)
+
+The Expo app also runs in a browser from the same code (`lodestar/app`). This
+is the fastest way to put a usable product in people's hands (no app-store
+review). It is a separate Vercel project from the marketing site.
+
+### Import
+
+1. Vercel > **Add New > Project** > import the repo.
+2. Set **Root Directory** to `lodestar/app`.
+3. The build command and output are already set in `app/vercel.json`
+   (`npx expo export -p web` -> `dist`, with SPA rewrites). Leave the
+   detected framework as "Other".
+
+### Environment variables
+
+Set these (Production + Preview). The app reads them at build time through
+`app.config.js`:
+
+| Variable | Value |
+|----------|-------|
+| `EXPO_PUBLIC_SUPABASE_URL` | `https://rjucvqthsseegxlwryru.supabase.co` |
+| `EXPO_PUBLIC_SUPABASE_ANON_KEY` | your anon key |
+
+(RevenueCat keys are native-only; billing is off in the web app, so leave
+them unset. The paywall shows its static plan comparison.)
+
+### Deploy and verify
+
+- Deploy. Open the `.vercel.app` URL; you should land on the Lodestar
+  **sign-in** screen.
+- Sign in with email (uses Supabase OTP), finish onboarding with Vega, and
+  confirm Today / Journal / Life Map work. This exercises the same edge
+  functions the mobile app uses, so it is also a great end-to-end backend test.
+- Point a subdomain like `app.yourdomain.com` at this project (Settings >
+  Domains), keeping the marketing site on the apex.
+
+Note: email sign-in needs Supabase auth email working (Section 3 SMTP), and the
+edge functions deployed (Section 4), since the web app talks to the same backend.
+
+---
+
 ## Quick reference
 
 | What | Where |
