@@ -5,12 +5,16 @@
 // ============================================================
 
 import "react-native-url-polyfill/auto";
+import { Platform } from "react-native";
 import { createClient } from "@supabase/supabase-js";
 import * as SecureStore from "expo-secure-store";
 import Constants from "expo-constants";
 
 const { supabaseUrl, supabaseAnonKey } = Constants.expoConfig.extra;
 
+// Session persistence differs by platform:
+//  - native: encrypted SecureStore (a stolen backup can't lift the token)
+//  - web:    localStorage (SecureStore is native-only)
 // SecureStore caps values at ~2KB; Supabase sessions fit comfortably.
 const SecureStorageAdapter = {
   getItem: (key) => SecureStore.getItemAsync(key),
@@ -18,11 +22,26 @@ const SecureStorageAdapter = {
   removeItem: (key) => SecureStore.deleteItemAsync(key),
 };
 
+const WebStorageAdapter = {
+  getItem: (key) => {
+    try { return Promise.resolve(globalThis.localStorage?.getItem(key) ?? null); }
+    catch { return Promise.resolve(null); }
+  },
+  setItem: (key, value) => {
+    try { globalThis.localStorage?.setItem(key, value); } catch { /* private mode */ }
+    return Promise.resolve();
+  },
+  removeItem: (key) => {
+    try { globalThis.localStorage?.removeItem(key); } catch { /* private mode */ }
+    return Promise.resolve();
+  },
+};
+
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
-    storage: SecureStorageAdapter,
+    storage: Platform.OS === "web" ? WebStorageAdapter : SecureStorageAdapter,
     autoRefreshToken: true,
     persistSession: true,
-    detectSessionInUrl: false, // no URL-based auth on native
+    detectSessionInUrl: false, // OTP code flow, not URL-based
   },
 });
