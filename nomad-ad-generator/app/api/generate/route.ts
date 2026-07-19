@@ -1,0 +1,135 @@
+import Anthropic from "@anthropic-ai/sdk";
+import { NextResponse } from "next/server";
+import { createClient } from "../../../lib/supabase/server";
+import { clean, requireEnv } from "../../../lib/env";
+import { generationLimit, type PlanId } from "../../../lib/plans";
+
+export const maxDuration = 60;
+
+const STAGES: Record<string, string> = {
+  TOF: "Top of funnel (cold audience). They have never heard of the brand. Lead with a pattern-interrupt hook, focus on the problem and curiosity — do not assume any brand awareness.",
+  MOF: "Middle of funnel (warm retargeting). They know the brand but have not bought. Overcome objections, use social proof, highlight differentiation and benefits.",
+  BOF: "Bottom of funnel (ready to buy). They have visited the site or added to cart. Create urgency, remove risk (guarantees, shipping, returns), and drive the final click.",
+};
+
+const VARIANT_SCHEMA = {
+  type: "object",
+  properties: {
+    variants: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          hook_style: { type: "string", description: "Short label for the hook/angle used, e.g. 'Problem-Agitate', 'Social Proof', 'Bold Claim'" },
+          headline: { type: "string", description: "Meta ad headline, max 40 characters" },
+          primary_text: { type: "string", description: "Meta ad primary text, 60-180 words, line breaks allowed" },
+          description: { type: "string", description: "Meta ad link description, max 30 words" },
+          cta: { type: "string", description: "Recommended CTA button, e.g. 'Shop Now'" },
+        },
+        required: ["hook_style", "headline", "primary_text", "description", "cta"],
+        additionalProperties: false,
+      },
+    },
+  },
+  required: ["variants"],
+  additionalProperties: false,
+} as const;
+
+export async function POST(request: Request) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+  }
+
+  const body = await request.json().catch(() => null);
+  const product = typeof body?.product === "string" ? body.product.trim() : "";
+  const audience = typeof body?.audience === "string" ? body.audience.trim() : "";
+  const tone = typeof body?.tone === "string" ? body.tone.trim() : "Bold & punchy";
+  const stage = typeof body?.stage === "string" && body.stage in STAGES ? body.stage : "TOF";
+
+  if (!product) {
+    return NextResponse.json({ error: "Describe your product or offer first." }, { status: 400 });
+  }
+
+  // Plan + monthly usage enforcement
+  const { data: profile } = await supabase.from("profiles").select("plan").eq("id", user.id).single();
+  const plan = (profile?.plan ?? "free") as PlanId;
+  const limit = generationLimit(plan);
+
+  if (limit !== -1) {
+    const monthStart = new Date();
+    monthStart.setUTCDate(1);
+    monthStart.setUTCHours(0, 0, 0, 0);
+    const { count } = await supabase
+      .from("generations")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .gte("created_at", monthStart.toISOString());
+
+    if ((count ?? 0) >= limit) {
+      return NextResponse.json(
+        {
+          error:
+            plan === "free"
+              ? `You've used all ${limit} free generations this month. Upgrade to keep generating.`
+              : `You've hit your ${limit} generations for this month. Upgrade your plan for more.`,
+          upgrade: true,
+        },
+        { status: 402 },
+      );
+    }
+  }
+
+  const anthropic = new Anthropic({ apiKey: requireEnv(process.env.ANTHROPIC_API_KEY, "ANTHROPIC_API_KEY") });
+
+  const response = await anthropic.messages.create({
+    model: clean(process.env.ANTHROPIC_MODEL) || "claude-opus-4-8",
+    max_tokens: 4096,
+    system:
+      "You are a direct-response copywriter with $50M+ in profitable Meta ad spend across DTC and e-commerce brands. " +
+      "You write scroll-stopping Facebook and Instagram ad copy that converts. Write like a human, never like AI. " +
+      "No hashtags. Emojis only where they genuinely add punch. Every variant must take a genuinely different angle.",
+    output_config: { format: { type: "json_schema", schema: VARIANT_SCHEMA } },
+    messages: [
+      {
+        role: "user",
+        content:
+          `Write 3 distinct Meta ad copy variants.\n\n` +
+          `Product/offer: ${product}\n` +
+          `Target audience: ${audience || "infer the most likely buyer from the product"}\n` +
+          `Tone: ${tone}\n` +
+          `Funnel stage: ${stage} — ${STAGES[stage]}`,
+      },
+    ],
+  });
+
+  if (response.stop_reason === "refusal") {
+    return NextResponse.json({ error: "That request couldn't be processed. Try rewording your product description." }, { status: 400 });
+  }
+
+  const text = response.content.find((block) => block.type === "text")?.text ?? "";
+  let variants;
+  try {
+    variants = JSON.parse(text).variants;
+  } catch {
+    return NextResponse.json({ error: "Generation failed. Please try again." }, { status: 502 });
+  }
+
+  const { error: insertError } = await supabase.from("generations").insert({
+    user_id: user.id,
+    product,
+    audience,
+    tone,
+    stage,
+    variants,
+  });
+  if (insertError) {
+    console.error("Failed to save generation:", insertError.message);
+  }
+
+  return NextResponse.json({ variants });
+}
