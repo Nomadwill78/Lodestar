@@ -75,7 +75,7 @@ export default function AdvisorScreen() {
         // Server declined — free questions are spent. Show a warm hand-off.
         setFreeUsed(CELESTE_FREE_LIMIT);
         storage.set(STORAGE_KEYS.CELESTE_FREE_USED, CELESTE_FREE_LIMIT);
-        setMessages(prev => [...prev, { role: 'assistant', content: "We've reached the end of your free questions, dear soul ✨ Upgrade to Cosmic and we can keep exploring the stars together, as often as your heart desires. 🌙" }]);
+        setMessages(prev => [...prev, { role: 'assistant', content: "We've reached the end of your free questions for this week, dear soul ✨ A few more will open up in a few days — or upgrade to Cosmic and we can keep exploring the stars together, as often as your heart desires. 🌙" }]);
         return;
       }
 
@@ -155,9 +155,9 @@ export default function AdvisorScreen() {
           {/* Input area — or upgrade prompt once free questions are spent */}
           {quotaLoaded && limitReached ? (
             <View style={styles.upgradePrompt}>
-              <Text style={styles.upgradeTitle}>You've used your {CELESTE_FREE_LIMIT} free questions ✨</Text>
+              <Text style={styles.upgradeTitle}>You've used your {CELESTE_FREE_LIMIT} free questions this week ✨</Text>
               <Text style={styles.upgradeSubtitle}>
-                Upgrade to Cosmic for unlimited guidance from Celeste, whenever the stars call.
+                Your free questions refresh in a few days. Or upgrade to Cosmic for unlimited guidance from Celeste, whenever the stars call.
               </Text>
               <GlowButton title="Unlock Unlimited Celeste" onPress={() => router.push('/pricing')} variant="gold" size="sm" style={styles.upgradeBtn} />
             </View>
@@ -166,7 +166,7 @@ export default function AdvisorScreen() {
               {quotaLoaded && !isCosmic && (
                 <View style={styles.quotaBanner}>
                   <Text style={styles.quotaText}>
-                    ✦ {freeRemaining} free {freeRemaining === 1 ? 'question' : 'questions'} remaining
+                    ✦ {freeRemaining} free {freeRemaining === 1 ? 'question' : 'questions'} left this week
                   </Text>
                   <TouchableOpacity onPress={() => router.push('/pricing')} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
                     <Text style={styles.quotaLink}>Go unlimited</Text>

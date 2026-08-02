@@ -46,8 +46,15 @@ npx supabase secrets set APP_URL=celestial://
 ### Create account & products
 1. Go to https://stripe.com → Dashboard
 2. Create Products:
-   - **Starseed Monthly**: $9.99/month recurring → copy Price ID
-   - **Cosmic Annual**: $79.99/year recurring → copy Price ID
+   - **Starseed Monthly**: $4.99/month recurring → copy Price ID
+   - **Cosmic Annual**: $39.99/year recurring → copy Price ID
+
+   > Note: prices shown in-app come from `lib/stripe.ts`; the actual charge is
+   > the Stripe Price object referenced by the env vars below. When changing
+   > prices, create **new** Price objects at the new amounts and repoint
+   > `STRIPE_STARSEED_MONTHLY_PRICE_ID` / `STRIPE_COSMIC_YEARLY_PRICE_ID` — Stripe
+   > Prices are immutable, so editing the number in code alone won't change what
+   > customers are billed. The Starseed checkout now opens a 3-day free trial.
 
 ### Configure webhook
 1. Stripe Dashboard → Developers → Webhooks → Add endpoint

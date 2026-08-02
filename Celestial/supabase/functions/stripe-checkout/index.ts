@@ -27,6 +27,11 @@ serve(async (req) => {
 
     const { data: profile } = await supabase.from('profiles').select('stripe_customer_id').eq('id', user.id).single();
 
+    // Days of free trial per plan. Starseed opens with a 3-day trial so new
+    // users experience premium before their card is charged; Cosmic (annual)
+    // has no trial.
+    const TRIAL_DAYS: Record<string, number> = { starseed: 3 };
+
     const sessionBody: Record<string, any> = {
       mode: 'subscription',
       line_items: [{ price: priceId, quantity: 1 }],
@@ -34,6 +39,10 @@ serve(async (req) => {
       cancel_url: `${APP_URL}payment-cancel`,
       metadata: { user_id: user.id, plan: planId },
     };
+
+    if (TRIAL_DAYS[planId]) {
+      sessionBody.subscription_data = { trial_period_days: TRIAL_DAYS[planId] };
+    }
 
     if (profile?.stripe_customer_id) {
       sessionBody.customer = profile.stripe_customer_id;

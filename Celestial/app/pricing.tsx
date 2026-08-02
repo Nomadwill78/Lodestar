@@ -120,7 +120,13 @@ export default function PricingScreen() {
           {!!errorMsg && <Text style={styles.errorMsg}>{errorMsg}</Text>}
           {selectedPlan !== 'free' && selectedPlan !== currentPlan && (
             <GlowButton
-              title={loading ? 'Opening Checkout...' : `Subscribe to ${PLANS[selectedPlan].name}`}
+              title={
+                loading
+                  ? 'Opening Checkout...'
+                  : 'trialDays' in PLANS[selectedPlan]
+                    ? `Start ${(PLANS[selectedPlan] as any).trialDays}-Day Free Trial`
+                    : `Subscribe to ${PLANS[selectedPlan].name}`
+              }
               onPress={handleSubscribe}
               disabled={loading}
               variant={selectedPlan === 'cosmic' ? 'gold' : 'primary'}

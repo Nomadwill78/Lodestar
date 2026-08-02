@@ -26,10 +26,12 @@ export const PLANS = {
   starseed: {
     id: 'starseed',
     name: 'Starseed',
-    price: 9.99,
+    price: 4.99,
     period: 'month',
+    trialDays: 3,
     stripePriceEnvKey: 'STRIPE_STARSEED_MONTHLY_PRICE_ID',
     features: [
+      '3-day free trial',
       'Everything in Free',
       'Full AI horoscope readings',
       'Complete birth chart + interpretation',
@@ -45,7 +47,7 @@ export const PLANS = {
   cosmic: {
     id: 'cosmic',
     name: 'Cosmic',
-    price: 79.99,
+    price: 39.99,
     period: 'year',
     stripePriceEnvKey: 'STRIPE_COSMIC_YEARLY_PRICE_ID',
     badge: 'Best Value',
@@ -57,7 +59,7 @@ export const PLANS = {
       'Partner compatibility deep dives',
       'Annual cosmic forecast',
       'Founding member badge',
-      '2 months free vs monthly',
+      '4 months free vs monthly',
     ],
     locked: [],
   },
