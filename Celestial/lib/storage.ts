@@ -28,5 +28,8 @@ export const STORAGE_KEYS = {
   CELESTE_FREE_USED: 'celestial_celeste_free_used',
 } as const;
 
-// How many free Ask Celeste questions a non-Cosmic user gets before upgrading.
+// How many free Ask Celeste questions a non-Cosmic user gets per window.
 export const CELESTE_FREE_LIMIT = 3;
+// The free allowance resets on this rolling window (7 days). Kept in sync with
+// FREE_WINDOW_MS in the advisor edge function.
+export const CELESTE_FREE_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;

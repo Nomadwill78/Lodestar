@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { CELESTE_FREE_WINDOW_MS } from './storage';
 
 export interface Message { role: 'user' | 'assistant'; content: string; }
 
@@ -70,17 +71,27 @@ export async function chatWithCeleste(messages: Message[], userContext: {
   }
 }
 
-/** Reads the account's server-side free-question count. Returns null if unavailable. */
+/**
+ * Reads the account's server-side free-question count for the current window.
+ * Returns 0 once the rolling weekly window has elapsed (the server resets on the
+ * next question), so the "questions remaining" banner stays accurate. Returns
+ * null if unavailable.
+ */
 export async function fetchAdvisorUsage(): Promise<number | null> {
   try {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return null;
     const { data } = await supabase
       .from('advisor_usage')
-      .select('free_questions_used')
+      .select('free_questions_used,free_questions_period_start')
       .eq('user_id', user.id)
       .maybeSingle();
-    return data?.free_questions_used ?? 0;
+    if (!data) return 0;
+    const start = data.free_questions_period_start
+      ? new Date(data.free_questions_period_start).getTime()
+      : null;
+    if (start === null || Date.now() - start >= CELESTE_FREE_WINDOW_MS) return 0;
+    return data.free_questions_used ?? 0;
   } catch {
     return null;
   }

@@ -6,8 +6,11 @@ const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? '';
 const SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
 const ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
 
-// Free Ask Celeste questions granted to non-Cosmic accounts.
+// Free Ask Celeste questions granted to non-Cosmic accounts, per rolling window.
 const FREE_LIMIT = 3;
+// Length of the free-question window. The allowance resets every 7 days so free
+// users keep returning to the advisor rather than hitting a permanent dead end.
+const FREE_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
 
 const corsHeaders = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type' };
 
@@ -35,6 +38,9 @@ serve(async (req) => {
 
     let isCosmic = false;
     let used = 0;
+    // Start of the caller's current free-question window. When the window has
+    // elapsed we treat usage as reset and stamp this fresh on the next write.
+    let periodStart = new Date().toISOString();
     if (userId && admin) {
       const { data: sub } = await admin
         .from('subscriptions')
@@ -49,12 +55,26 @@ serve(async (req) => {
       if (!isCosmic) {
         const { data: usage } = await admin
           .from('advisor_usage')
-          .select('free_questions_used')
+          .select('free_questions_used,free_questions_period_start')
           .eq('user_id', userId)
           .maybeSingle();
-        used = usage?.free_questions_used ?? 0;
+
+        const storedStart = usage?.free_questions_period_start
+          ? new Date(usage.free_questions_period_start)
+          : null;
+        const windowElapsed = !storedStart || (Date.now() - storedStart.getTime()) >= FREE_WINDOW_MS;
+
+        if (windowElapsed) {
+          // A new week — the allowance is fresh regardless of the old count.
+          used = 0;
+          periodStart = new Date().toISOString();
+        } else {
+          used = usage?.free_questions_used ?? 0;
+          periodStart = storedStart.toISOString();
+        }
+
         if (used >= FREE_LIMIT) {
-          // Out of free questions — do not spend a model call.
+          // Out of free questions for this window — do not spend a model call.
           return json({ limitReached: true, used, remaining: 0 });
         }
       }
@@ -97,7 +117,12 @@ Guidelines:
       newUsed = used + 1;
       await admin
         .from('advisor_usage')
-        .upsert({ user_id: userId, free_questions_used: newUsed, updated_at: new Date().toISOString() }, { onConflict: 'user_id' });
+        .upsert({
+          user_id: userId,
+          free_questions_used: newUsed,
+          free_questions_period_start: periodStart,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'user_id' });
     }
 
     return json({
