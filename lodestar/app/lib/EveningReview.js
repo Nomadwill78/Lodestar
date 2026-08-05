@@ -49,7 +49,7 @@ export default function EveningReview({ visible, onClose, onDone }) {
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={close}>
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined}
-        style={{ flex: 1, backgroundColor: "rgba(5,8,20,0.7)", justifyContent: "flex-end" }}>
+        style={{ flex: 1, backgroundColor: C.scrim, justifyContent: "flex-end" }}>
         <View style={{ backgroundColor: C.deep, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, paddingBottom: 36, maxHeight: "88%" }}>
           <ScrollView keyboardShouldPersistTaps="handled">
             {closer ? (

@@ -31,4 +31,7 @@ export const theme = {
   starSoft: "rgba(232,176,75,0.10)",
   careSoft: "rgba(127,168,232,0.10)",
   line: "rgba(138,147,184,0.18)",
+
+  // Dimmed backdrop behind the bottom-sheet modals
+  scrim: "rgba(5,8,20,0.75)",
 };

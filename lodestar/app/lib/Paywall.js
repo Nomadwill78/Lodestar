@@ -85,7 +85,7 @@ export default function Paywall({ visible, onClose, onPurchased }) {
 
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
-      <View style={{ flex: 1, backgroundColor: "rgba(5,8,20,0.75)", justifyContent: "flex-end" }}>
+      <View style={{ flex: 1, backgroundColor: C.scrim, justifyContent: "flex-end" }}>
         <View style={{ backgroundColor: C.deep, borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingTop: 20, paddingBottom: 34, maxHeight: "92%" }}>
           <ScrollView contentContainerStyle={{ paddingHorizontal: 22 }}>
             {done ? (
