@@ -1,0 +1,13 @@
+{
+  // next/core-web-vitals covers the rules worth enforcing here: hook
+  // correctness, missing alt text, and the image and script pitfalls that hurt
+  // Core Web Vitals.
+  "extends": "next/core-web-vitals",
+  "rules": {
+    // Off by choice. It only asks for &apos; and &quot; in JSX prose; React
+    // escapes the raw characters correctly either way, so the rendered output
+    // is identical. This site is mostly Vega's voice, and copy stays reviewable
+    // as "Let's make it daily." rather than "Let&apos;s make it daily."
+    "react/no-unescaped-entities": "off"
+  }
+}

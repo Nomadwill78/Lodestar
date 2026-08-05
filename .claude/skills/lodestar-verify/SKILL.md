@@ -20,10 +20,14 @@ cd lodestar/web && npm install && npm run build
 About 30 seconds. Vercel runs this on every push, so a failure here fails the
 deploy and blocks the PR.
 
-**Do not run `npm run lint`.** There is no ESLint config in the project, so
-`next lint` drops into an interactive setup prompt and hangs a non-interactive
-session. Type checking and lint still run inside `next build`. If you want a
-real lint gate, that is a change to make deliberately, not a check to run.
+`npm run lint` runs the same ESLint pass on its own, which is quicker when you
+only want the lint result. It is not an extra gate: `next build` already runs
+it, and a lint **error** fails the build and therefore the deploy. Warnings do
+not.
+
+The config extends `next/core-web-vitals` and turns off exactly one rule,
+`react/no-unescaped-entities`, so prose stays readable as `Let's` rather than
+`Let&apos;s`. Prefer fixing a violation over adding another exception.
 
 ## app/
 
