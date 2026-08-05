@@ -25,9 +25,8 @@ for judging user-facing copy.
 Vega is the face of the product, a recurring character like the Duolingo owl:
 an ethereal, ambiguous-ethnicity feminine presence, calming and professional,
 love and motivation personified. Deep indigo hair, warm skin, a gold
-eight-pointed star motif that is also the app's mark. Palette: night
-`#0B1026`, deep `#141B3C`, star/gold `#E8B04B`, ink `#EDEFF7`, muted
-`#8A93B8`, care-blue `#7FA8E8`.
+eight-pointed star motif that is also the app's mark. The palette lives in
+`app/lib/theme.js`, mirrored for the site in `web/theme.js`.
 
 Her defining mechanic is an emotional arc driven by days since last contact.
 She escalates from warm presence to loving panic when a member goes quiet, and
@@ -53,9 +52,11 @@ gentle (1-2), reaching (3-5), worried (6-9), aching (10-13), meltdown (14+).
   policy is `for all`, so updates and deletes will succeed. Momentum and
   nightly patterns are derived from this table as an evidence log, so
   rewriting rows to "fix" state silently corrupts both.
-- **The brand palette is duplicated across ~16 files** in `app/` and `web/`.
-  There is no shared tokens module yet, so a palette change means touching
-  all of them.
+- **The palette has two sources that must move together**: `app/lib/theme.js`
+  and `web/theme.js`. They cannot be one file, because `app/` and `web/` are
+  separate Vercel projects rooted at their own directories and neither build
+  can read outside its root. Use the tokens rather than raw hex; on the site
+  that includes `theme()` inside `globals.css`.
 - **Auth model differs by function.** Member-facing functions run on the
   member's JWT so RLS applies. `morning-brief` and `vega-nudge` are
   cron-triggered, deploy with `--no-verify-jwt`, use the service key, and gate

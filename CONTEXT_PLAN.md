@@ -107,7 +107,22 @@ Create `.claude/skills/`. Three skills, in priority order:
 Not building skills for `Celestial/`, `kalshi-tool/`, or
 `nomad-ad-generator/` yet. Build them when we actually work in them.
 
-## Phase 3: Prefer references to descriptions
+## Phase 3: Prefer references to descriptions (palette done)
+
+The palette is now a tokens module on each side, `app/lib/theme.js` and
+`web/theme.js`, and the hex list is out of `CLAUDE.md` in favour of a pointer
+to them. Twelve app files that each declared their own `const C` palette now
+import one; on the site, `tailwind.config.js` and `globals.css` both read from
+the module. Both builds pass and the compiled CSS is unchanged.
+
+One source turned out to be impossible: `app/` and `web/` are separate Vercel
+projects rooted at their own directories, so neither build can read a file
+above its root. Two mirrors with the constraint written down is the honest
+answer, and the reason is now recorded in both files and in `lodestar-verify`.
+
+The other half of this phase, pointing at mockups and files instead of
+describing them, is a habit rather than a task.
+
 
 - When you want a UI change, point me at a mockup or at the existing screen
   file rather than describing the result. You already do this well once:

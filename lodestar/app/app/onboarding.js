@@ -14,8 +14,7 @@ import { saveDeviceLocale } from "../lib/saveDeviceLocale";
 import { useAuth } from "../context/AuthContext";
 import { useRouter } from "expo-router";
 
-const C = { night: "#0B1026", star: "#E8B04B", ink: "#EDEFF7", muted: "#8A93B8", line: "rgba(138,147,184,0.18)" };
-
+import { theme as C } from "../lib/theme";
 function extractLifeMap(text) {
   const m = text.match(/<lifemap>([\s\S]*?)<\/lifemap>/);
   if (!m) return null;
@@ -102,7 +101,7 @@ export default function Onboarding() {
           </View>
         ))}
         {(busy || committing) && <ActivityIndicator color={C.star} style={{ marginTop: 12 }} />}
-        {err ? <Text style={{ color: "#E8848B", marginTop: 12 }}>{err}</Text> : null}
+        {err ? <Text style={{ color: C.setback, marginTop: 12 }}>{err}</Text> : null}
       </ScrollView>
 
       {!committing && (

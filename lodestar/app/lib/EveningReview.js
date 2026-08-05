@@ -12,8 +12,7 @@ import {
 } from "react-native";
 import { submitEveningReview } from "./submitEveningReview";
 
-const C = { night: "#0B1026", deep: "#141B3C", star: "#E8B04B", ink: "#EDEFF7", muted: "#8A93B8", line: "rgba(138,147,184,0.18)" };
-
+import { theme as C } from "./theme";
 // Static, in-voice closers. No em dashes, never guilt.
 const CLOSERS = [
   "Rest well. The day counted, and so did you. I'll be here in the morning.",
@@ -73,7 +72,7 @@ export default function EveningReview({ visible, onClose, onDone }) {
                 <Field label="Tomorrow's one thing" placeholder="The single move that matters most."
                   value={tomorrow} onChangeText={setTomorrow} />
 
-                {err ? <Text style={{ color: "#E8848B", marginTop: 14 }}>{err}</Text> : null}
+                {err ? <Text style={{ color: C.setback, marginTop: 14 }}>{err}</Text> : null}
 
                 <Pressable onPress={save} disabled={!canSave}
                   style={{ backgroundColor: C.star, borderRadius: 14, padding: 16, alignItems: "center", marginTop: 20, opacity: canSave ? 1 : 0.5 }}>

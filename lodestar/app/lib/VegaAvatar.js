@@ -12,6 +12,7 @@
 // ============================================================
 
 import { useEffect, useRef } from "react";
+import { theme } from "./theme";
 import { View, Animated, Easing, Text, Image } from "react-native";
 import Svg, { Polygon } from "react-native-svg";
 import { tierFromKey, pickGreeting } from "../lib/vegaPersonality";
@@ -90,7 +91,7 @@ export default function VegaAvatar({ tierKey = "present", size = 120, showGreeti
       </View>
 
       {showGreeting && (
-        <Text style={{ color: "#EDEFF7", fontSize: 16, lineHeight: 23, textAlign: "center", marginTop: 18, maxWidth: 320 }}>
+        <Text style={{ color: theme.ink, fontSize: 16, lineHeight: 23, textAlign: "center", marginTop: 18, maxWidth: 320 }}>
           {pickGreeting(tier)}
         </Text>
       )}

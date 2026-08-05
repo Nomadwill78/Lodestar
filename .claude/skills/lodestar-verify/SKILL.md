@@ -57,6 +57,12 @@ role, and that nothing rewrites `log_entries` in place.
 These fail in production rather than at deploy time, so a clean deploy is not
 evidence that they hold.
 
+## Palette changes
+
+A palette change has to land in both `app/lib/theme.js` and `web/theme.js`,
+which are deliberate mirrors rather than one shared file. Confirm the values
+agree; nothing enforces it.
+
 ## Reporting the result
 
 Say which checks ran and which did not. "The web build passes; I did not

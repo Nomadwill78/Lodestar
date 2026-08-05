@@ -8,8 +8,7 @@ import { useState } from "react";
 import { View, Text, TextInput, Pressable, ActivityIndicator } from "react-native";
 import { supabase } from "../../lib/supabaseClient";
 
-const C = { night: "#0B1026", star: "#E8B04B", ink: "#EDEFF7", muted: "#8A93B8", line: "rgba(138,147,184,0.18)" };
-
+import { theme as C } from "../../lib/theme";
 export default function SignIn() {
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
@@ -49,7 +48,7 @@ export default function SignIn() {
           placeholderTextColor={C.muted} keyboardType="number-pad" style={input()} />
       )}
 
-      {err ? <Text style={{ color: "#E8848B", marginTop: 12 }}>{err}</Text> : null}
+      {err ? <Text style={{ color: C.setback, marginTop: 12 }}>{err}</Text> : null}
 
       <Pressable onPress={stage === "email" ? sendCode : verify} disabled={busy}
         style={{ backgroundColor: C.star, borderRadius: 14, padding: 16, alignItems: "center", marginTop: 20, opacity: busy ? 0.6 : 1 }}>

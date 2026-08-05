@@ -15,11 +15,7 @@ import {
 } from "react-native";
 import { getUpgradeOptions, purchasePackageById, restorePurchases } from "./purchases";
 
-const C = {
-  night: "#0B1026", deep: "#141B3C", star: "#E8B04B", starSoft: "rgba(232,176,75,0.10)",
-  ink: "#EDEFF7", muted: "#8A93B8", line: "rgba(138,147,184,0.18)",
-};
-
+import { theme as C } from "./theme";
 // Static value props, shown alongside live prices or as the dev fallback.
 const PLANS = [
   {
