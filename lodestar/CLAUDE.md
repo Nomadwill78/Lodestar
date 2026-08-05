@@ -13,6 +13,11 @@ the Anthropic API, `claude-sonnet-4-6` for generation and
 
 `DEPLOY.md` is the deployment runbook. `README.md` covers local setup.
 
+Three skills carry the detail that is only needed sometimes: `lodestar-verify`
+for checking a change (there is no test suite, so this is not obvious),
+`lodestar-deploy` for anything touching Supabase or Vercel, and `vega-voice`
+for judging user-facing copy.
+
 ---
 
 ## Vega, the character

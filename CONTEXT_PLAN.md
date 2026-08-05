@@ -25,11 +25,10 @@ Five shifts matter for us:
 
 | | Before | Target | Now |
 |---|---|---|---|
-| Always-loaded context (`CLAUDE.md` files) | 226 lines | ~100 lines | **110 (done)** |
-| Skills | 0 | 3 |
-| `.claude/` config | none | skills + settings |
-| Verification story | none for `lodestar/` | one skill |
-| Rubrics | prose rules in CLAUDE.md | one voice rubric |
+| Always-loaded context (`CLAUDE.md` files) | 226 lines | ~100 lines | **115 (done)** |
+| Skills | 0 | 3 | **3 (done)** |
+| Verification story | none for `lodestar/` | one skill | **done, commands tested** |
+| Rubrics | prose rules in CLAUDE.md | one voice rubric | **done** |
 
 The headline: **all our guidance is always-on, and none of it is on demand.**
 That is precisely the shape the article says to move away from. We are not
@@ -76,7 +75,18 @@ what the repo is and where the boundaries are. Only change is accuracy, adding
 
 Net effect: what survives is the stuff I would get wrong without being told.
 
-## Phase 2: Build the skill tree
+## Phase 2: Build the skill tree (done)
+
+All three landed in `.claude/skills/`, each 56 to 64 lines, small enough that
+splitting them further would cost more than it saves. Every command in
+`lodestar-verify` was executed before being written down, which changed the
+plan in two places: `npm run lint` turned out to hang on an interactive ESLint
+prompt and is now documented as a trap rather than a check, and
+`expo export --platform web` turned out to be a much better app-side check
+than expected, since it exercises the metro watch folder and `.web.js`
+resolution. That claim was confirmed by breaking `metro.config.js` and
+watching the export fail.
+
 
 Create `.claude/skills/`. Three skills, in priority order:
 
