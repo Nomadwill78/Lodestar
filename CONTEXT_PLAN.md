@@ -23,9 +23,9 @@ Five shifts matter for us:
 
 ## Where we stand today
 
-| | Current | Target |
-|---|---|---|
-| Always-loaded context (`CLAUDE.md` files) | 226 lines | ~100 lines |
+| | Before | Target | Now |
+|---|---|---|---|
+| Always-loaded context (`CLAUDE.md` files) | 226 lines | ~100 lines | **110 (done)** |
 | Skills | 0 | 3 |
 | `.claude/` config | none | skills + settings |
 | Verification story | none for `lodestar/` | one skill |
@@ -41,7 +41,14 @@ repo holds "four independent projects" and lists four, but
 
 ---
 
-## Phase 1: Rightsize the two CLAUDE.md files
+## Phase 1: Rightsize the two CLAUDE.md files (done)
+
+Landed at 110 lines, from 226. Auditing to trim also surfaced four factual
+errors in the old text, all of them now fixed: the missing fifth project, a
+structure tree that had drifted from the filesystem, a stale "assets not yet
+added" TODO for art that shipped, and a claim that `log_entries` is
+append-only when its RLS policy is `for all` and permits deletes.
+
 
 **`CLAUDE.md` (root, 32 lines).** Already close to the article's ideal: it says
 what the repo is and where the boundaries are. Only change is accuracy, adding
