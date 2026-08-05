@@ -7,8 +7,7 @@
 import { Tabs } from "expo-router";
 import { Text } from "react-native";
 
-const C = { night: "#0B1026", star: "#E8B04B", muted: "#8A93B8", line: "rgba(138,147,184,0.18)" };
-
+import { theme as C } from "../../lib/theme";
 export default function AppLayout() {
   return (
     <Tabs screenOptions={{

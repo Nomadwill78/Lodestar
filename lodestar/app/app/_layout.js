@@ -13,8 +13,7 @@ import { AuthProvider, useAuth } from "../context/AuthContext";
 import { registerForPush } from "../lib/registerForPush";
 import { configurePurchases } from "../lib/purchases";
 import { supabase } from "../lib/supabaseClient";
-
-const NIGHT = "#0B1026";
+import { theme } from "../lib/theme";
 
 function RouterGate() {
   const { session, hasLifeMap, loading } = useAuth();
@@ -47,14 +46,14 @@ function RouterGate() {
 
   if (loading) {
     return (
-      <View style={{ flex: 1, backgroundColor: NIGHT, justifyContent: "center", alignItems: "center" }}>
-        <ActivityIndicator color="#E8B04B" />
+      <View style={{ flex: 1, backgroundColor: theme.night, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator color={theme.star} />
       </View>
     );
   }
 
   return (
-    <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: NIGHT } }}>
+    <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: theme.night } }}>
       <Stack.Screen name="(auth)" />
       <Stack.Screen name="onboarding" />
       <Stack.Screen name="(app)" />

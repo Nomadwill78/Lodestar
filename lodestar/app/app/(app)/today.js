@@ -12,8 +12,7 @@ import VegaAvatar from "../../lib/VegaAvatar";
 import { useVega } from "../../lib/useVega";
 import EveningReview from "../../lib/EveningReview";
 
-const C = { night: "#0B1026", star: "#E8B04B", starSoft: "rgba(232,176,75,0.10)", ink: "#EDEFF7", muted: "#8A93B8", line: "rgba(138,147,184,0.18)" };
-
+import { theme as C } from "../../lib/theme";
 export default function Today() {
   const { tierKey, touch, loading: vegaLoading } = useVega();
   const [brief, setBrief] = useState(null);

@@ -6,8 +6,7 @@
 
 import { View, Text, Image } from "react-native";
 
-const C = { star: "#E8B04B", ink: "#EDEFF7", muted: "#8A93B8" };
-
+import { theme as C } from "./theme";
 export default function VegaEmptyState({ title, message, width = 232 }) {
   return (
     <View style={{ alignItems: "center", paddingVertical: 18 }}>

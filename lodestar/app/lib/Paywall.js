@@ -15,11 +15,7 @@ import {
 } from "react-native";
 import { getUpgradeOptions, purchasePackageById, restorePurchases } from "./purchases";
 
-const C = {
-  night: "#0B1026", deep: "#141B3C", star: "#E8B04B", starSoft: "rgba(232,176,75,0.10)",
-  ink: "#EDEFF7", muted: "#8A93B8", line: "rgba(138,147,184,0.18)",
-};
-
+import { theme as C } from "./theme";
 // Static value props, shown alongside live prices or as the dev fallback.
 const PLANS = [
   {
@@ -89,7 +85,7 @@ export default function Paywall({ visible, onClose, onPurchased }) {
 
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
-      <View style={{ flex: 1, backgroundColor: "rgba(5,8,20,0.75)", justifyContent: "flex-end" }}>
+      <View style={{ flex: 1, backgroundColor: C.scrim, justifyContent: "flex-end" }}>
         <View style={{ backgroundColor: C.deep, borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingTop: 20, paddingBottom: 34, maxHeight: "92%" }}>
           <ScrollView contentContainerStyle={{ paddingHorizontal: 22 }}>
             {done ? (

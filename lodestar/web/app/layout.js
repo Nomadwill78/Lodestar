@@ -1,4 +1,5 @@
 import "./globals.css";
+import { palette } from "../theme";
 
 export const metadata = {
   title: "Lodestar — Manifesting for people who actually do the work",
@@ -21,7 +22,7 @@ export const metadata = {
 };
 
 export const viewport = {
-  themeColor: "#0B1026",
+  themeColor: palette.night,
 };
 
 export default function RootLayout({ children }) {

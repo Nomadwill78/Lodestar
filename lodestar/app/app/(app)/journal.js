@@ -13,8 +13,7 @@ import { submitJournal } from "../../lib/submitJournal";
 import { useVega } from "../../lib/useVega";
 import Paywall from "../../lib/Paywall";
 
-const C = { night: "#0B1026", star: "#E8B04B", ink: "#EDEFF7", muted: "#8A93B8", line: "rgba(138,147,184,0.18)", care: "#7FA8E8", careSoft: "rgba(127,168,232,0.10)" };
-
+import { theme as C } from "../../lib/theme";
 export default function Journal() {
   const { touch } = useVega();
   const [text, setText] = useState("");
@@ -55,7 +54,7 @@ export default function Journal() {
           {busy ? <ActivityIndicator color={C.night} /> : <Text style={{ color: C.night, fontWeight: "600", fontSize: 16 }}>Talk it through</Text>}
         </Pressable>
 
-        {err ? <Text style={{ color: "#E8848B", marginTop: 14 }}>{err}</Text> : null}
+        {err ? <Text style={{ color: C.setback, marginTop: 14 }}>{err}</Text> : null}
 
         {result?.lane === "crisis" && <CrisisCard message={result.message} resources={result.resources} />}
         {result?.lane === "setback" && <ReframeCard message={result.message} />}

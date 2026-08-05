@@ -11,8 +11,8 @@ html {
 }
 
 body {
-  background-color: #0B1026;
-  color: #EDEFF7;
+  background-color: theme("colors.night");
+  color: theme("colors.ink");
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }

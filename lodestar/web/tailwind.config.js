@@ -1,3 +1,5 @@
+const { palette } = require("./theme");
+
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
@@ -6,15 +8,7 @@ module.exports = {
   ],
   theme: {
     extend: {
-      colors: {
-        // Lodestar brand palette (mirrors the app).
-        night: "#0B1026",
-        deep: "#141B3C",
-        star: "#E8B04B",
-        ink: "#EDEFF7",
-        muted: "#8A93B8",
-        care: "#7FA8E8",
-      },
+      colors: palette,
       fontFamily: {
         sans: ["ui-sans-serif", "system-ui", "-apple-system", "Segoe UI", "Roboto", "Helvetica", "Arial", "sans-serif"],
         display: ["ui-serif", "Georgia", "Cambria", "Times New Roman", "serif"],

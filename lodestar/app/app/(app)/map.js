@@ -13,12 +13,7 @@ import VegaEmptyState from "../../lib/VegaEmptyState";
 import Paywall from "../../lib/Paywall";
 import { useTier } from "../../lib/useTier";
 
-const C = {
-  night: "#0B1026", deep: "#141B3C", star: "#E8B04B", starSoft: "rgba(232,176,75,0.10)",
-  ink: "#EDEFF7", muted: "#8A93B8", line: "rgba(138,147,184,0.18)",
-  care: "#7FA8E8", careSoft: "rgba(127,168,232,0.10)", win: "#7FD8A8", setback: "#E8848B",
-};
-
+import { theme as C } from "../../lib/theme";
 const MOMENTUM_DAYS = 14;
 
 export default function MapScreen() {
@@ -187,7 +182,7 @@ function Momentum({ logs }) {
             const color = d.setbacks > d.wins ? C.setback : d.wins > 0 ? C.win : C.line;
             return (
               <View key={d.key} style={{ flex: 1, alignItems: "center", justifyContent: "flex-end" }}>
-                <View style={{ width: "100%", height: h, borderRadius: 3, backgroundColor: d.total === 0 ? "rgba(138,147,184,0.18)" : color }} />
+                <View style={{ width: "100%", height: h, borderRadius: 3, backgroundColor: d.total === 0 ? C.line : color }} />
               </View>
             );
           })}

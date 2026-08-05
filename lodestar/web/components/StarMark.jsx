@@ -1,5 +1,7 @@
 // The Lodestar / Vega mark: a gold eight-pointed star.
-export default function StarMark({ size = 28, color = "#E8B04B", className = "" }) {
+import { palette } from "../theme";
+
+export default function StarMark({ size = 28, color = palette.star, className = "" }) {
   const cx = size / 2;
   const cy = size / 2;
   const pts = [];
