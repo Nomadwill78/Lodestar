@@ -4,9 +4,11 @@
 // globals.css) and imported directly where a raw value is unavoidable, such as
 // Next metadata and SVG props.
 //
-// Mirrors app/lib/theme.js. The two cannot share a file because each is a
-// separate Vercel project rooted at its own directory, so neither build can
-// read outside it. Change one, change both.
+// Mirrors app/lib/theme.js. One shared file is possible but is not set up on
+// either side: this project's Vercel root directory is lodestar/web, so
+// anything above it needs "include files outside root directory", and the app
+// reaches above its own root only through an explicit metro watch folder.
+// Until both are arranged, change one, change both.
 //
 // CommonJS so the Tailwind config can require it.
 // ============================================================

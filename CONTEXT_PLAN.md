@@ -115,10 +115,12 @@ to them. Twelve app files that each declared their own `const C` palette now
 import one; on the site, `tailwind.config.js` and `globals.css` both read from
 the module. Both builds pass and the compiled CSS is unchanged.
 
-One source turned out to be impossible: `app/` and `web/` are separate Vercel
-projects rooted at their own directories, so neither build can read a file
-above its root. Two mirrors with the constraint written down is the honest
-answer, and the reason is now recorded in both files and in `lodestar-verify`.
+One source is possible but not currently set up on either side, so the two
+mirror instead. The app reaches above its root only through the metro watch
+folder, and the site's Vercel project is rooted at `lodestar/web`, so a file
+above it needs "include files outside root directory". Wiring both up is a
+reasonable follow-up; until then the constraint is recorded next to both
+modules and in `lodestar-verify`.
 
 The other half of this phase, pointing at mockups and files instead of
 describing them, is a habit rather than a task.

@@ -1,9 +1,12 @@
 // ============================================================
 // Lodestar's brand palette. Single source for the Expo app.
 //
-// The marketing site mirrors these values in web/tailwind.config.js. The two
-// cannot share a file: each is a separate Vercel project rooted at its own
-// directory, so neither build can read outside it. Change one, change both.
+// The marketing site mirrors these values in web/theme.js. One shared file is
+// possible but is not set up on either side: this app reaches above its root
+// only through the explicit watch folder in metro.config.js, which is how it
+// reads vegaTiers.json, and the site's Vercel project is rooted at
+// lodestar/web, so anything above that needs Vercel's "include files outside
+// root directory". Until both are arranged, change one, change both.
 // ============================================================
 
 export const theme = {

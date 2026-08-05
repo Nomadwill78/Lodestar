@@ -53,10 +53,11 @@ gentle (1-2), reaching (3-5), worried (6-9), aching (10-13), meltdown (14+).
   nightly patterns are derived from this table as an evidence log, so
   rewriting rows to "fix" state silently corrupts both.
 - **The palette has two sources that must move together**: `app/lib/theme.js`
-  and `web/theme.js`. They cannot be one file, because `app/` and `web/` are
-  separate Vercel projects rooted at their own directories and neither build
-  can read outside its root. Use the tokens rather than raw hex; on the site
-  that includes `theme()` inside `globals.css`.
+  and `web/theme.js`. One shared file is possible but is not set up: the app
+  reaches above its root only through the metro watch folder, and the site's
+  Vercel project is rooted at `web/`, so anything above it needs Vercel's
+  "include files outside root directory". Use the tokens rather than raw hex;
+  on the site that includes `theme()` inside `globals.css`.
 - **Auth model differs by function.** Member-facing functions run on the
   member's JWT so RLS applies. `morning-brief` and `vega-nudge` are
   cron-triggered, deploy with `--no-verify-jwt`, use the service key, and gate
