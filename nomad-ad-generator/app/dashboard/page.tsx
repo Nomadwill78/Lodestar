@@ -6,6 +6,7 @@ import Logo from "../components/Logo";
 import { createClient } from "../../lib/supabase/client";
 import { PLANS, generationLimit, type PlanId } from "../../lib/plans";
 import { scanPolicyRisk, variantText } from "../../lib/policy-check";
+import { PLACEMENTS, type PlacementId } from "../../lib/placements";
 
 interface Variant {
   hook_style: string;
@@ -13,6 +14,7 @@ interface Variant {
   primary_text: string;
   description: string;
   cta: string;
+  placements?: { placement: PlacementId; headline: string }[];
 }
 
 interface Generation {
@@ -36,6 +38,49 @@ function PolicyRiskRow({ variant }: { variant: Variant }) {
           ⚠ {f.label}
         </span>
       ))}
+    </div>
+  );
+}
+
+function PlacementHeadlines({
+  variant,
+  copiedKey,
+  onCopy,
+}: {
+  variant: Variant;
+  copiedKey: string;
+  onCopy: (text: string, key: string) => void;
+}) {
+  if (!variant.placements || variant.placements.length === 0) return null;
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginTop: "12px", paddingTop: "12px", borderTop: "1px dashed var(--paper-15)" }}>
+      <span className="mono" style={{ fontSize: "11px", letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--paper-45)" }}>
+        Headlines by placement
+      </span>
+      {PLACEMENTS.map((spec) => {
+        const entry = variant.placements!.find((p) => p.placement === spec.id);
+        if (!entry) return null;
+        const key = `${variant.headline}-${spec.id}`;
+        const over = entry.headline.length > spec.maxLength;
+        return (
+          <div key={spec.id} style={{ display: "flex", alignItems: "center", gap: "10px" }} title={spec.helper}>
+            <span className="mono" style={{ fontSize: "11px", color: "var(--paper-45)", width: "104px", flexShrink: 0 }}>
+              {spec.label}
+            </span>
+            <span style={{ flex: 1, fontSize: "14px", color: "var(--paper)" }}>{entry.headline}</span>
+            <span className="mono" style={{ fontSize: "11px", color: over ? "var(--hot)" : "var(--paper-30)", flexShrink: 0 }}>
+              {entry.headline.length}/{spec.maxLength}
+            </span>
+            <button
+              className="btn-outline"
+              style={{ padding: "3px 9px", fontSize: "11px", flexShrink: 0 }}
+              onClick={() => onCopy(entry.headline, key)}
+            >
+              {copiedKey === key ? "Copied ✓" : "Copy"}
+            </button>
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -123,6 +168,12 @@ export default function DashboardPage() {
 
   async function copyVariant(v: Variant, key: string) {
     await navigator.clipboard.writeText(`${v.headline}\n\n${v.primary_text}\n\n${v.description}\nCTA: ${v.cta}`);
+    setCopiedKey(key);
+    setTimeout(() => setCopiedKey(""), 1500);
+  }
+
+  async function copyText(text: string, key: string) {
+    await navigator.clipboard.writeText(text);
     setCopiedKey(key);
     setTimeout(() => setCopiedKey(""), 1500);
   }
@@ -264,6 +315,7 @@ export default function DashboardPage() {
                       {v.description} · CTA: <strong>{v.cta}</strong>
                     </p>
                     <PolicyRiskRow variant={v} />
+                    <PlacementHeadlines variant={v} copiedKey={copiedKey} onCopy={copyText} />
                   </div>
                 );
               })}
@@ -330,6 +382,7 @@ export default function DashboardPage() {
                           <p style={{ fontWeight: 700, color: "var(--paper)", marginBottom: "6px" }}>{v.headline}</p>
                           <p>{v.primary_text}</p>
                           <PolicyRiskRow variant={v} />
+                          <PlacementHeadlines variant={v} copiedKey={copiedKey} onCopy={copyText} />
                         </div>
                       );
                     })}

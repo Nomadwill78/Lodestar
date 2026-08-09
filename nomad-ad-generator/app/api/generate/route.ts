@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "../../../lib/supabase/server";
 import { clean, requireEnv } from "../../../lib/env";
 import { generationLimit, type PlanId } from "../../../lib/plans";
+import { PLACEMENTS } from "../../../lib/placements";
 
 export const maxDuration = 60;
 
@@ -21,12 +22,25 @@ const VARIANT_SCHEMA = {
         type: "object",
         properties: {
           hook_style: { type: "string", description: "Short label for the hook/angle used, e.g. 'Problem-Agitate', 'Social Proof', 'Bold Claim'" },
-          headline: { type: "string", description: "Meta ad headline, max 40 characters" },
+          headline: { type: "string", description: "Meta ad headline, max 40 characters — this is the Feed placement headline" },
           primary_text: { type: "string", description: "Meta ad primary text, 60-180 words, line breaks allowed" },
           description: { type: "string", description: "Meta ad link description, max 30 words" },
           cta: { type: "string", description: "Recommended CTA button, e.g. 'Shop Now'" },
+          placements: {
+            type: "array",
+            description: "The same hook rewritten as a standalone headline for each additional Meta placement, each fit to that placement's character budget — not a truncation of the Feed headline.",
+            items: {
+              type: "object",
+              properties: {
+                placement: { type: "string", enum: PLACEMENTS.map((p) => p.id) },
+                headline: { type: "string" },
+              },
+              required: ["placement", "headline"],
+              additionalProperties: false,
+            },
+          },
         },
-        required: ["hook_style", "headline", "primary_text", "description", "cta"],
+        required: ["hook_style", "headline", "primary_text", "description", "cta", "placements"],
         additionalProperties: false,
       },
     },
@@ -102,7 +116,11 @@ export async function POST(request: Request) {
           `Product/offer: ${product}\n` +
           `Target audience: ${audience || "infer the most likely buyer from the product"}\n` +
           `Tone: ${tone}\n` +
-          `Funnel stage: ${stage} — ${STAGES[stage]}`,
+          `Funnel stage: ${stage} — ${STAGES[stage]}\n\n` +
+          `For each variant, also write a headline for each of these placements. Each is a fresh ` +
+          `headline carrying the same hook and angle as the variant — not the Feed headline cut down ` +
+          `to fit — because each placement has a different amount of room and a different reading context:\n` +
+          PLACEMENTS.map((p) => `- ${p.id} (max ${p.maxLength} characters): ${p.helper}`).join("\n"),
       },
     ],
   });
