@@ -98,6 +98,28 @@ export async function POST(request: Request) {
     }
   }
 
+  // Pull this account's real winners — variants the user marked as having
+  // actually won in Meta, not just copy that was generated — and hand them
+  // to Claude as reference. This is the whole point of tracking winners at
+  // all: the tool should get sharper for an account the more it's used.
+  const { data: winnerRows } = await supabase
+    .from("generations")
+    .select("stage, product, variants, winner_index")
+    .eq("user_id", user.id)
+    .not("winner_index", "is", null)
+    .order("created_at", { ascending: false })
+    .limit(5);
+
+  const winnerContext = (winnerRows ?? [])
+    .map((row) => {
+      if (typeof row.winner_index !== "number" || !Array.isArray(row.variants)) return null;
+      const winner = row.variants[row.winner_index];
+      if (!winner?.headline || !winner?.hook_style) return null;
+      return `- [${row.stage}] "${String(row.product).slice(0, 60)}" — hook: ${winner.hook_style} — "${winner.headline}"`;
+    })
+    .filter((line): line is string => Boolean(line))
+    .join("\n");
+
   const anthropic = new Anthropic({ apiKey: requireEnv(process.env.ANTHROPIC_API_KEY, "ANTHROPIC_API_KEY") });
 
   const response = await anthropic.messages.create({
@@ -120,7 +142,12 @@ export async function POST(request: Request) {
           `For each variant, also write a headline for each of these placements. Each is a fresh ` +
           `headline carrying the same hook and angle as the variant — not the Feed headline cut down ` +
           `to fit — because each placement has a different amount of room and a different reading context:\n` +
-          PLACEMENTS.map((p) => `- ${p.id} (max ${p.maxLength} characters): ${p.helper}`).join("\n"),
+          PLACEMENTS.map((p) => `- ${p.id} (max ${p.maxLength} characters): ${p.helper}`).join("\n") +
+          (winnerContext
+            ? `\n\nThis account has marked real winners from past tests — copy that actually converted, ` +
+              `not just copy that was generated. Let the hook angle, tone, and phrasing patterns below ` +
+              `inform your choices where relevant. Do not repeat them verbatim:\n${winnerContext}`
+            : ""),
       },
     ],
   });
@@ -137,7 +164,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Generation failed. Please try again." }, { status: 502 });
   }
 
-  const { error: rpcError } = await supabase.rpc("create_generation_if_within_limit", {
+  const { data: rpcData, error: rpcError } = await supabase.rpc("create_generation_if_within_limit", {
     p_limit: limit,
     p_product: product,
     p_audience: audience,
@@ -156,5 +183,7 @@ export async function POST(request: Request) {
     console.error("Failed to save generation:", rpcError.message);
   }
 
-  return NextResponse.json({ variants });
+  const generationId = Array.isArray(rpcData) ? rpcData[0]?.id ?? null : null;
+
+  return NextResponse.json({ variants, generationId });
 }
