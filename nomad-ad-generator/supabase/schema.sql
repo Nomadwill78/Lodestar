@@ -65,3 +65,54 @@ drop policy if exists "Users can insert own generations" on public.generations;
 create policy "Users can insert own generations"
   on public.generations for insert
   with check (auth.uid() = user_id);
+
+-- Atomic "count this month's generations, then insert" so concurrent
+-- requests from the same user (double-click, multiple tabs, a script)
+-- can't each read the same under-limit count and all slip through.
+-- pg_advisory_xact_lock serializes calls per user for the life of this
+-- transaction (auto-released on commit/rollback), so the count and the
+-- insert below are effectively one atomic step instead of two round trips
+-- with a race window between them. p_limit = -1 means unlimited.
+create or replace function public.create_generation_if_within_limit(
+  p_limit integer,
+  p_product text,
+  p_audience text,
+  p_tone text,
+  p_stage text,
+  p_variants jsonb
+)
+returns table (id uuid, created_at timestamptz)
+language plpgsql
+security definer set search_path = public
+as $$
+declare
+  v_user_id uuid := auth.uid();
+  v_month_start timestamptz := date_trunc('month', now() at time zone 'utc') at time zone 'utc';
+  v_count integer;
+begin
+  if v_user_id is null then
+    raise exception 'not_authenticated';
+  end if;
+
+  perform pg_advisory_xact_lock(hashtextextended(v_user_id::text, 0));
+
+  if p_limit >= 0 then
+    select count(*) into v_count
+    from public.generations g
+    where g.user_id = v_user_id
+      and g.created_at >= v_month_start;
+
+    if v_count >= p_limit then
+      raise exception 'generation_limit_reached';
+    end if;
+  end if;
+
+  return query
+    insert into public.generations (user_id, product, audience, tone, stage, variants)
+    values (v_user_id, p_product, p_audience, p_tone, p_stage, p_variants)
+    returning generations.id, generations.created_at;
+end;
+$$;
+
+revoke all on function public.create_generation_if_within_limit(integer, text, text, text, text, jsonb) from public;
+grant execute on function public.create_generation_if_within_limit(integer, text, text, text, text, jsonb) to authenticated;

@@ -69,10 +69,19 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Describe your product or offer first." }, { status: 400 });
   }
 
-  // Plan + monthly usage enforcement
+  // Plan + monthly usage enforcement. This is a fast-fail pre-check only —
+  // it saves a Claude call for the common case of someone clearly over
+  // their limit, but it is NOT the source of truth, since a plain
+  // count-then-later-insert has a race window between concurrent requests.
+  // The real enforcement is create_generation_if_within_limit's atomic
+  // check-and-insert after generation, below.
   const { data: profile } = await supabase.from("profiles").select("plan").eq("id", user.id).single();
   const plan = (profile?.plan ?? "free") as PlanId;
   const limit = generationLimit(plan);
+  const limitMessage =
+    plan === "free"
+      ? `You've used all ${limit} free generations this month. Upgrade to keep generating.`
+      : `You've hit your ${limit} generations for this month. Upgrade your plan for more.`;
 
   if (limit !== -1) {
     const monthStart = new Date();
@@ -85,16 +94,7 @@ export async function POST(request: Request) {
       .gte("created_at", monthStart.toISOString());
 
     if ((count ?? 0) >= limit) {
-      return NextResponse.json(
-        {
-          error:
-            plan === "free"
-              ? `You've used all ${limit} free generations this month. Upgrade to keep generating.`
-              : `You've hit your ${limit} generations for this month. Upgrade your plan for more.`,
-          upgrade: true,
-        },
-        { status: 402 },
-      );
+      return NextResponse.json({ error: limitMessage, upgrade: true }, { status: 402 });
     }
   }
 
@@ -137,16 +137,23 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Generation failed. Please try again." }, { status: 502 });
   }
 
-  const { error: insertError } = await supabase.from("generations").insert({
-    user_id: user.id,
-    product,
-    audience,
-    tone,
-    stage,
-    variants,
+  const { error: rpcError } = await supabase.rpc("create_generation_if_within_limit", {
+    p_limit: limit,
+    p_product: product,
+    p_audience: audience,
+    p_tone: tone,
+    p_stage: stage,
+    p_variants: variants,
   });
-  if (insertError) {
-    console.error("Failed to save generation:", insertError.message);
+
+  if (rpcError) {
+    // A concurrent request from the same user won the race between the
+    // pre-check above and this atomic insert — the limit is real, so the
+    // generation is not handed out even though Claude already produced it.
+    if (rpcError.message.includes("generation_limit_reached")) {
+      return NextResponse.json({ error: limitMessage, upgrade: true }, { status: 402 });
+    }
+    console.error("Failed to save generation:", rpcError.message);
   }
 
   return NextResponse.json({ variants });
