@@ -6,14 +6,6 @@ import Logo from "../components/Logo";
 import { createClient } from "../../lib/supabase/client";
 import { PLANS } from "../../lib/plans";
 
-const labelStyle: React.CSSProperties = {
-  display: "block",
-  fontSize: "13px",
-  fontWeight: 600,
-  color: "rgba(255,255,255,0.5)",
-  marginBottom: "6px",
-};
-
 export default function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -47,37 +39,17 @@ export default function SignupPage() {
 
   if (sent) {
     return (
-      <div
-        style={{
-          background: "var(--navy)",
-          minHeight: "100vh",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          padding: "24px",
-        }}
-      >
+      <div className="shell" style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "24px" }}>
         <div style={{ width: "100%", maxWidth: "400px", textAlign: "center" }}>
-          <div style={{ fontSize: "48px", marginBottom: "20px" }}>✉️</div>
-          <h1 style={{ fontSize: "24px", fontWeight: 800, marginBottom: "12px" }}>Check your email</h1>
-          <p style={{ color: "rgba(255,255,255,0.6)", fontSize: "15px", lineHeight: 1.6 }}>
-            We sent a confirmation link to <strong style={{ color: "var(--white)" }}>{email}</strong>. Click it to
+          <div className="mono" style={{ fontSize: "13px", color: "var(--hot)", letterSpacing: "0.1em", marginBottom: "16px" }}>
+            ✓ CONFIRMATION SENT
+          </div>
+          <h1 className="display" style={{ fontSize: "28px", marginBottom: "14px" }}>Check your email</h1>
+          <p style={{ color: "var(--paper-60)", fontSize: "15px", lineHeight: 1.6 }}>
+            We sent a confirmation link to <strong style={{ color: "var(--paper)" }}>{email}</strong>. Click it to
             activate your account and start generating ads.
           </p>
-          <Link
-            href="/login"
-            style={{
-              display: "inline-block",
-              marginTop: "28px",
-              padding: "11px 28px",
-              borderRadius: "9px",
-              border: "1px solid rgba(255,255,255,0.3)",
-              color: "var(--white)",
-              textDecoration: "none",
-              fontSize: "14px",
-              fontWeight: 600,
-            }}
-          >
+          <Link href="/login" className="btn-outline" style={{ display: "inline-block", marginTop: "28px", padding: "11px 28px", textDecoration: "none", fontSize: "14px" }}>
             Back to Login
           </Link>
         </div>
@@ -86,52 +58,32 @@ export default function SignupPage() {
   }
 
   return (
-    <div
-      style={{
-        background: "var(--navy)",
-        minHeight: "100vh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "32px 24px",
-      }}
-    >
+    <div className="shell" style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "32px 24px" }}>
       <div style={{ width: "100%", maxWidth: "460px" }}>
         <div style={{ textAlign: "center", marginBottom: "36px" }}>
           <Link href="/" style={{ textDecoration: "none" }}>
             <Logo style={{ margin: "0 auto 16px", display: "block" }} />
           </Link>
-          <h1 style={{ fontSize: "24px", fontWeight: 800, marginBottom: "6px" }}>Start generating</h1>
-          <p style={{ color: "rgba(255,255,255,0.5)", fontSize: "14px" }}>
-            Create your free account — no credit card required
-          </p>
+          <h1 className="display" style={{ fontSize: "28px", marginBottom: "10px" }}>Start generating</h1>
+          <p style={{ color: "var(--paper-45)", fontSize: "14px" }}>Create your free account — no credit card required</p>
         </div>
 
         <div style={{ marginBottom: "24px" }}>
-          <p
-            style={{
-              fontSize: "12px",
-              fontWeight: 700,
-              color: "rgba(255,255,255,0.4)",
-              letterSpacing: "0.08em",
-              marginBottom: "10px",
-            }}
-          >
-            CHOOSE A PLAN
-          </p>
+          <p className="field-label" style={{ marginBottom: "10px" }}>Choose a plan</p>
           <div style={{ display: "flex", gap: "8px" }}>
             {(Object.entries(PLANS) as [keyof typeof PLANS, (typeof PLANS)[keyof typeof PLANS]][]).map(([id, p]) => (
               <button
                 key={id}
                 type="button"
                 onClick={() => setPlan(id)}
+                className="mono"
                 style={{
                   flex: 1,
                   padding: "10px 8px",
                   borderRadius: "8px",
-                  border: `1px solid ${plan === id ? "var(--white)" : "rgba(255,255,255,0.15)"}`,
-                  background: plan === id ? "rgba(255,255,255,0.12)" : "transparent",
-                  color: plan === id ? "var(--white)" : "rgba(255,255,255,0.5)",
+                  border: `1px solid ${plan === id ? "var(--hot)" : "var(--paper-15)"}`,
+                  background: plan === id ? "rgba(255,74,50,0.1)" : "transparent",
+                  color: plan === id ? "var(--paper)" : "var(--paper-45)",
                   cursor: "pointer",
                   fontSize: "12px",
                   fontWeight: 700,
@@ -149,7 +101,7 @@ export default function SignupPage() {
         <div className="card" style={{ padding: "32px" }}>
           <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
             <div>
-              <label style={labelStyle}>Full Name</label>
+              <label className="field-label">Full Name</label>
               <input
                 className="input-field"
                 type="text"
@@ -160,7 +112,7 @@ export default function SignupPage() {
               />
             </div>
             <div>
-              <label style={labelStyle}>Email</label>
+              <label className="field-label">Email</label>
               <input
                 className="input-field"
                 type="email"
@@ -171,7 +123,7 @@ export default function SignupPage() {
               />
             </div>
             <div>
-              <label style={labelStyle}>Password</label>
+              <label className="field-label">Password</label>
               <input
                 className="input-field"
                 type="password"
@@ -182,37 +134,19 @@ export default function SignupPage() {
                 required
               />
             </div>
-            {error && (
-              <div
-                style={{
-                  background: "rgba(239,68,68,0.1)",
-                  border: "1px solid rgba(239,68,68,0.3)",
-                  borderRadius: "8px",
-                  padding: "10px 14px",
-                  color: "#fca5a5",
-                  fontSize: "13px",
-                }}
-              >
-                {error}
-              </div>
-            )}
-            <button
-              type="submit"
-              className="btn-gold"
-              disabled={loading}
-              style={{ padding: "13px", borderRadius: "9px", fontSize: "15px", marginTop: "8px" }}
-            >
+            {error && <div className="error-box">{error}</div>}
+            <button type="submit" className="btn-hot" disabled={loading} style={{ padding: "13px", fontSize: "15px", marginTop: "8px" }}>
               {loading ? "Creating account..." : `Start with ${PLANS[plan].name} — $${PLANS[plan].price}/mo`}
             </button>
           </form>
-          <p style={{ textAlign: "center", marginTop: "20px", fontSize: "13px", color: "rgba(255,255,255,0.5)" }}>
+          <p style={{ textAlign: "center", marginTop: "20px", fontSize: "13px", color: "var(--paper-45)" }}>
             Already have an account?{" "}
-            <Link href="/login" style={{ color: "var(--white)", textDecoration: "none", fontWeight: 700 }}>
+            <Link href="/login" style={{ color: "var(--paper)", textDecoration: "none", fontWeight: 700 }}>
               Sign in
             </Link>
           </p>
         </div>
-        <p style={{ textAlign: "center", marginTop: "16px", fontSize: "12px", color: "rgba(255,255,255,0.35)" }}>
+        <p style={{ textAlign: "center", marginTop: "16px", fontSize: "12px", color: "var(--paper-30)" }}>
           By signing up you agree to our Terms of Service and Privacy Policy.
         </p>
       </div>
