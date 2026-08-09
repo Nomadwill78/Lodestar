@@ -24,19 +24,11 @@ interface Generation {
 }
 
 const TONES = ["Bold & punchy", "Friendly & casual", "Professional", "Luxury & premium", "Urgent / FOMO"];
-const STAGES = [
-  { id: "TOF", label: "TOF · Cold" },
-  { id: "MOF", label: "MOF · Warm" },
-  { id: "BOF", label: "BOF · Hot" },
+const STAGES: { id: string; label: string; heat: "cold" | "warm" | "hot" }[] = [
+  { id: "TOF", label: "TOF · Cold", heat: "cold" },
+  { id: "MOF", label: "MOF · Warm", heat: "warm" },
+  { id: "BOF", label: "BOF · Hot", heat: "hot" },
 ];
-
-const labelStyle: React.CSSProperties = {
-  display: "block",
-  fontSize: "13px",
-  fontWeight: 600,
-  color: "rgba(255,255,255,0.5)",
-  marginBottom: "6px",
-};
 
 export default function DashboardPage() {
   const [product, setProduct] = useState("");
@@ -144,41 +136,32 @@ export default function DashboardPage() {
   const usageLabel = limit === -1 ? `${usedThisMonth} generations this month` : `${usedThisMonth} of ${limit} generations used this month`;
 
   return (
-    <div style={{ background: "var(--navy)", minHeight: "100vh", color: "var(--white)" }}>
-      <nav
-        style={{
-          borderBottom: "1px solid rgba(255,255,255,0.1)",
-          padding: "0 24px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          height: "64px",
-        }}
-      >
-        <Link href="/" style={{ display: "flex", alignItems: "center", gap: "12px", textDecoration: "none" }}>
+    <div className="shell">
+      <nav className="nav">
+        <Link href="/" className="nav-brand">
           <Logo size={32} />
-          <span style={{ fontWeight: 800, fontSize: "14px", letterSpacing: "0.04em" }}>NOMAD CONSULTING</span>
+          <span className="nav-word">NOMAD CONSULTING</span>
         </Link>
         <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
-          <span style={{ fontSize: "12px", color: "rgba(255,255,255,0.45)" }}>
+          <span className="mono" style={{ fontSize: "12px", color: "var(--paper-45)" }}>
             {plan === "free" ? "Free plan" : `${PLANS[plan as keyof typeof PLANS]?.name ?? plan} plan`} · {usageLabel}
           </span>
-          <button className="btn-outline" onClick={signOut} style={{ padding: "8px 16px", borderRadius: "8px", fontSize: "13px" }}>
+          <button className="btn-outline" onClick={signOut} style={{ padding: "8px 16px", fontSize: "13px" }}>
             Sign out
           </button>
         </div>
       </nav>
 
       <main style={{ maxWidth: "860px", margin: "0 auto", padding: "40px 24px 80px" }}>
-        <h1 style={{ fontSize: "26px", fontWeight: 800, marginBottom: "6px" }}>Generate ad copy</h1>
-        <p style={{ color: "rgba(255,255,255,0.5)", fontSize: "14px", marginBottom: "28px" }}>
+        <h1 className="display" style={{ fontSize: "30px", marginBottom: "8px" }}>Generate ad copy</h1>
+        <p style={{ color: "var(--paper-45)", fontSize: "14px", marginBottom: "28px" }}>
           Describe your offer, pick a funnel stage, and get 3 ready-to-test variants.
         </p>
 
         <div className="card" style={{ padding: "28px", marginBottom: "32px" }}>
           <form onSubmit={handleGenerate} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
             <div>
-              <label style={labelStyle}>What are you selling?</label>
+              <label className="field-label">What are you selling?</label>
               <textarea
                 className="input-field"
                 rows={3}
@@ -190,7 +173,7 @@ export default function DashboardPage() {
               />
             </div>
             <div>
-              <label style={labelStyle}>Target audience (optional)</label>
+              <label className="field-label">Target audience (optional)</label>
               <input
                 className="input-field"
                 type="text"
@@ -201,7 +184,7 @@ export default function DashboardPage() {
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
               <div>
-                <label style={labelStyle}>Tone</label>
+                <label className="field-label">Tone</label>
                 <select className="input-field" value={tone} onChange={(e) => setTone(e.target.value)}>
                   {TONES.map((t) => (
                     <option key={t} value={t}>
@@ -211,12 +194,13 @@ export default function DashboardPage() {
                 </select>
               </div>
               <div>
-                <label style={labelStyle}>Funnel stage</label>
+                <label className="field-label">Funnel stage</label>
                 <div style={{ display: "flex", gap: "8px" }}>
                   {STAGES.map((s) => (
                     <button
                       key={s.id}
                       type="button"
+                      data-heat={s.heat}
                       className={`stage-btn${stage === s.id ? " active" : ""}`}
                       onClick={() => setStage(s.id)}
                     >
@@ -226,21 +210,8 @@ export default function DashboardPage() {
                 </div>
               </div>
             </div>
-            {error && (
-              <div
-                style={{
-                  background: "rgba(239,68,68,0.1)",
-                  border: "1px solid rgba(239,68,68,0.3)",
-                  borderRadius: "8px",
-                  padding: "10px 14px",
-                  color: "#fca5a5",
-                  fontSize: "13px",
-                }}
-              >
-                {error}
-              </div>
-            )}
-            <button type="submit" className="btn-gold" disabled={loading} style={{ padding: "13px", borderRadius: "9px", fontSize: "15px" }}>
+            {error && <div className="error-box">{error}</div>}
+            <button type="submit" className="btn-hot" disabled={loading} style={{ padding: "13px", fontSize: "15px" }}>
               {loading ? "Generating…" : "Generate 3 Variants"}
             </button>
           </form>
@@ -263,16 +234,16 @@ export default function DashboardPage() {
                 return (
                   <div key={key} className="copy-block fade-in">
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
-                      <span style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.08em", color: "rgba(255,255,255,0.45)" }}>
+                      <span className="mono" style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.08em", color: "var(--paper-45)" }}>
                         VARIANT {i + 1} · {v.hook_style.toUpperCase()}
                       </span>
-                      <button className="btn-outline" style={{ padding: "5px 12px", borderRadius: "6px", fontSize: "12px" }} onClick={() => copyVariant(v, key)}>
+                      <button className="btn-outline" style={{ padding: "5px 12px", fontSize: "12px" }} onClick={() => copyVariant(v, key)}>
                         {copiedKey === key ? "Copied ✓" : "Copy"}
                       </button>
                     </div>
-                    <p style={{ fontWeight: 700, color: "var(--white)", marginBottom: "8px" }}>{v.headline}</p>
+                    <p style={{ fontWeight: 700, color: "var(--paper)", marginBottom: "8px" }}>{v.headline}</p>
                     <p style={{ marginBottom: "8px" }}>{v.primary_text}</p>
-                    <p style={{ fontSize: "13px", color: "rgba(255,255,255,0.55)" }}>
+                    <p style={{ fontSize: "13px", color: "var(--paper-45)" }}>
                       {v.description} · CTA: <strong>{v.cta}</strong>
                     </p>
                   </div>
@@ -290,18 +261,18 @@ export default function DashboardPage() {
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "12px" }}>
               {(Object.entries(PLANS) as [string, (typeof PLANS)[keyof typeof PLANS]][]).map(([id, p]) => (
                 <div key={id} className="card" style={{ padding: "20px" }}>
-                  <div style={{ fontSize: "12px", fontWeight: 700, letterSpacing: "0.08em", color: "rgba(255,255,255,0.5)", marginBottom: "6px" }}>
+                  <div className="mono" style={{ fontSize: "12px", fontWeight: 700, letterSpacing: "0.08em", color: "var(--paper-45)", marginBottom: "6px" }}>
                     {p.name.toUpperCase()}
                   </div>
                   <div style={{ marginBottom: "12px" }}>
-                    <span style={{ fontSize: "26px", fontWeight: 800 }}>${p.price}</span>
-                    <span style={{ color: "rgba(255,255,255,0.45)", fontSize: "13px" }}>/mo</span>
+                    <span className="mono" style={{ fontSize: "26px", fontWeight: 700 }}>${p.price}</span>
+                    <span style={{ color: "var(--paper-45)", fontSize: "13px" }}>/mo</span>
                   </div>
                   <button
-                    className="btn-gold"
+                    className="btn-hot"
                     disabled={upgrading === id}
                     onClick={() => upgrade(id)}
-                    style={{ width: "100%", padding: "10px", borderRadius: "8px", fontSize: "13px" }}
+                    style={{ width: "100%", padding: "10px", fontSize: "13px" }}
                   >
                     {upgrading === id ? "Redirecting…" : `Get ${p.name}`}
                   </button>
@@ -321,7 +292,7 @@ export default function DashboardPage() {
                     <span style={{ fontWeight: 600, flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                       {g.product}
                     </span>
-                    <span style={{ fontSize: "12px", color: "rgba(255,255,255,0.4)" }}>
+                    <span className="mono" style={{ fontSize: "12px", color: "var(--paper-30)" }}>
                       {g.stage} · {new Date(g.created_at).toLocaleDateString()}
                     </span>
                   </summary>
@@ -331,14 +302,14 @@ export default function DashboardPage() {
                       return (
                         <div key={key} className="copy-block">
                           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
-                            <span style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.08em", color: "rgba(255,255,255,0.45)" }}>
+                            <span className="mono" style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.08em", color: "var(--paper-45)" }}>
                               VARIANT {i + 1}
                             </span>
-                            <button className="btn-outline" style={{ padding: "4px 10px", borderRadius: "6px", fontSize: "12px" }} onClick={() => copyVariant(v, key)}>
+                            <button className="btn-outline" style={{ padding: "4px 10px", fontSize: "12px" }} onClick={() => copyVariant(v, key)}>
                               {copiedKey === key ? "Copied ✓" : "Copy"}
                             </button>
                           </div>
-                          <p style={{ fontWeight: 700, color: "var(--white)", marginBottom: "6px" }}>{v.headline}</p>
+                          <p style={{ fontWeight: 700, color: "var(--paper)", marginBottom: "6px" }}>{v.headline}</p>
                           <p>{v.primary_text}</p>
                         </div>
                       );
