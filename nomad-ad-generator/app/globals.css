@@ -498,6 +498,41 @@ select.input-field option {
   }
 }
 
+/* ---------- policy-risk flags ---------- */
+
+.risk-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--paper-15);
+}
+
+.risk-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  padding: 4px 9px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 178, 56, 0.4);
+  background: rgba(255, 178, 56, 0.1);
+  color: var(--warm);
+  cursor: help;
+}
+
+.risk-clear {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--paper-30);
+  letter-spacing: 0.02em;
+}
+
 /* ---------- rate card (pricing) ---------- */
 
 .rate-card {

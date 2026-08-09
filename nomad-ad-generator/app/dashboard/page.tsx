@@ -5,6 +5,7 @@ import Link from "next/link";
 import Logo from "../components/Logo";
 import { createClient } from "../../lib/supabase/client";
 import { PLANS, generationLimit, type PlanId } from "../../lib/plans";
+import { scanPolicyRisk, variantText } from "../../lib/policy-check";
 
 interface Variant {
   hook_style: string;
@@ -21,6 +22,22 @@ interface Generation {
   tone: string;
   variants: Variant[];
   created_at: string;
+}
+
+function PolicyRiskRow({ variant }: { variant: Variant }) {
+  const flags = scanPolicyRisk(variantText(variant));
+  if (flags.length === 0) {
+    return <div className="risk-row risk-clear">✓ No obvious policy flags</div>;
+  }
+  return (
+    <div className="risk-row">
+      {flags.map((f) => (
+        <span key={f.category} className="risk-pill" title={`Matched: "${f.match}"`}>
+          ⚠ {f.label}
+        </span>
+      ))}
+    </div>
+  );
 }
 
 const TONES = ["Bold & punchy", "Friendly & casual", "Professional", "Luxury & premium", "Urgent / FOMO"];
@@ -246,6 +263,7 @@ export default function DashboardPage() {
                     <p style={{ fontSize: "13px", color: "var(--paper-45)" }}>
                       {v.description} · CTA: <strong>{v.cta}</strong>
                     </p>
+                    <PolicyRiskRow variant={v} />
                   </div>
                 );
               })}
@@ -311,6 +329,7 @@ export default function DashboardPage() {
                           </div>
                           <p style={{ fontWeight: 700, color: "var(--paper)", marginBottom: "6px" }}>{v.headline}</p>
                           <p>{v.primary_text}</p>
+                          <PolicyRiskRow variant={v} />
                         </div>
                       );
                     })}
