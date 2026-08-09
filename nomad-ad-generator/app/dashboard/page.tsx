@@ -26,6 +26,7 @@ interface Generation {
   tone: string;
   variants: Variant[];
   created_at: string;
+  winner_index: number | null;
 }
 
 function PolicyRiskRow({ variant }: { variant: Variant }) {
@@ -41,6 +42,30 @@ function PolicyRiskRow({ variant }: { variant: Variant }) {
         </span>
       ))}
     </div>
+  );
+}
+
+function WinnerControl({
+  generationId,
+  index,
+  winnerIndex,
+  onMark,
+}: {
+  generationId: string;
+  index: number;
+  winnerIndex: number | null;
+  onMark: (generationId: string, index: number | null) => void;
+}) {
+  const isWinner = winnerIndex === index;
+  return (
+    <button
+      className={isWinner ? "btn-hot" : "btn-outline"}
+      style={{ padding: "5px 12px", fontSize: "12px" }}
+      onClick={() => onMark(generationId, isWinner ? null : index)}
+      title={isWinner ? "Marked as the winner in real testing — click to unmark" : "Mark this as the variant that actually won when you tested it"}
+    >
+      {isWinner ? "★ Winner" : "Mark winner"}
+    </button>
   );
 }
 
@@ -174,6 +199,8 @@ export default function DashboardPage() {
   const [usedThisMonth, setUsedThisMonth] = useState(0);
   const [history, setHistory] = useState<Generation[]>([]);
   const [upgrading, setUpgrading] = useState("");
+  const [currentGenerationId, setCurrentGenerationId] = useState<string | null>(null);
+  const [currentWinnerIndex, setCurrentWinnerIndex] = useState<number | null>(null);
 
   const refresh = useCallback(async () => {
     const supabase = createClient();
@@ -197,7 +224,7 @@ export default function DashboardPage() {
 
     const { data: rows } = await supabase
       .from("generations")
-      .select("id, product, audience, stage, tone, variants, created_at")
+      .select("id, product, audience, stage, tone, variants, created_at, winner_index")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false })
       .limit(10);
@@ -214,6 +241,8 @@ export default function DashboardPage() {
     setNeedsUpgrade(false);
     setLoading(true);
     setVariants([]);
+    setCurrentGenerationId(null);
+    setCurrentWinnerIndex(null);
     try {
       const res = await fetch("/api/generate", {
         method: "POST",
@@ -226,6 +255,7 @@ export default function DashboardPage() {
         throw new Error(data.error || "Generation failed. Please try again.");
       }
       setVariants(data.variants);
+      setCurrentGenerationId(data.generationId ?? null);
       refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Generation failed. Please try again.");
@@ -244,6 +274,22 @@ export default function DashboardPage() {
     await navigator.clipboard.writeText(text);
     setCopiedKey(key);
     setTimeout(() => setCopiedKey(""), 1500);
+  }
+
+  async function markWinner(generationId: string, index: number | null) {
+    const supabase = createClient();
+    const { error: rpcError } = await supabase.rpc("set_generation_winner", {
+      p_generation_id: generationId,
+      p_winner_index: index,
+    });
+    if (rpcError) {
+      setError("Couldn't save that. Try again.");
+      return;
+    }
+    if (generationId === currentGenerationId) {
+      setCurrentWinnerIndex(index);
+    }
+    setHistory((prev) => prev.map((g) => (g.id === generationId ? { ...g, winner_index: index } : g)));
   }
 
   async function upgrade(planId: string) {
@@ -373,9 +419,14 @@ export default function DashboardPage() {
                       <span className="mono" style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.08em", color: "var(--paper-45)" }}>
                         VARIANT {i + 1} · {v.hook_style.toUpperCase()}
                       </span>
-                      <button className="btn-outline" style={{ padding: "5px 12px", fontSize: "12px" }} onClick={() => copyVariant(v, key)}>
-                        {copiedKey === key ? "Copied ✓" : "Copy"}
-                      </button>
+                      <div style={{ display: "flex", gap: "8px" }}>
+                        {currentGenerationId && (
+                          <WinnerControl generationId={currentGenerationId} index={i} winnerIndex={currentWinnerIndex} onMark={markWinner} />
+                        )}
+                        <button className="btn-outline" style={{ padding: "5px 12px", fontSize: "12px" }} onClick={() => copyVariant(v, key)}>
+                          {copiedKey === key ? "Copied ✓" : "Copy"}
+                        </button>
+                      </div>
                     </div>
                     <p style={{ fontWeight: 700, color: "var(--paper)", marginBottom: "8px" }}>{v.headline}</p>
                     <p style={{ marginBottom: "8px" }}>{v.primary_text}</p>
@@ -439,6 +490,7 @@ export default function DashboardPage() {
                 <details key={g.id} className="card" style={{ padding: "16px 20px" }}>
                   <summary style={{ cursor: "pointer", fontSize: "14px", display: "flex", gap: "10px", alignItems: "baseline" }}>
                     <span style={{ fontWeight: 600, flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {g.winner_index !== null && <span style={{ color: "var(--hot)" }}>★ </span>}
                       {g.product}
                     </span>
                     <span className="mono" style={{ fontSize: "12px", color: "var(--paper-30)" }}>
@@ -454,9 +506,12 @@ export default function DashboardPage() {
                             <span className="mono" style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.08em", color: "var(--paper-45)" }}>
                               VARIANT {i + 1}
                             </span>
-                            <button className="btn-outline" style={{ padding: "4px 10px", fontSize: "12px" }} onClick={() => copyVariant(v, key)}>
-                              {copiedKey === key ? "Copied ✓" : "Copy"}
-                            </button>
+                            <div style={{ display: "flex", gap: "8px" }}>
+                              <WinnerControl generationId={g.id} index={i} winnerIndex={g.winner_index} onMark={markWinner} />
+                              <button className="btn-outline" style={{ padding: "4px 10px", fontSize: "12px" }} onClick={() => copyVariant(v, key)}>
+                                {copiedKey === key ? "Copied ✓" : "Copy"}
+                              </button>
+                            </div>
                           </div>
                           <p style={{ fontWeight: 700, color: "var(--paper)", marginBottom: "6px" }}>{v.headline}</p>
                           <p>{v.primary_text}</p>

@@ -51,8 +51,17 @@ create table if not exists public.generations (
   created_at timestamptz not null default now()
 );
 
+-- create table if not exists is a no-op on a table that already exists, so
+-- new columns need an explicit, idempotent alter for anyone re-running this
+-- against a live database.
+alter table public.generations add column if not exists winner_index integer;
+
 create index if not exists generations_user_created_idx
   on public.generations (user_id, created_at desc);
+
+create index if not exists generations_user_winner_idx
+  on public.generations (user_id, created_at desc)
+  where winner_index is not null;
 
 alter table public.generations enable row level security;
 
@@ -116,3 +125,45 @@ $$;
 
 revoke all on function public.create_generation_if_within_limit(integer, text, text, text, text, jsonb) from public;
 grant execute on function public.create_generation_if_within_limit(integer, text, text, text, text, jsonb) to authenticated;
+
+-- Marks (or clears, with p_winner_index = null) which variant actually won
+-- in the user's real ad testing. A dedicated function rather than a plain
+-- UPDATE + RLS policy so a client can only ever touch winner_index, never
+-- rewrite its own product/variants/etc., and so the index is bounds-checked
+-- against the row's actual variant count rather than trusted blindly.
+create or replace function public.set_generation_winner(
+  p_generation_id uuid,
+  p_winner_index integer
+)
+returns void
+language plpgsql
+security definer set search_path = public
+as $$
+declare
+  v_user_id uuid := auth.uid();
+  v_variant_count integer;
+begin
+  if v_user_id is null then
+    raise exception 'not_authenticated';
+  end if;
+
+  select jsonb_array_length(variants) into v_variant_count
+  from public.generations
+  where id = p_generation_id and user_id = v_user_id;
+
+  if v_variant_count is null then
+    raise exception 'generation_not_found';
+  end if;
+
+  if p_winner_index is not null and (p_winner_index < 0 or p_winner_index >= v_variant_count) then
+    raise exception 'winner_index_out_of_range';
+  end if;
+
+  update public.generations
+  set winner_index = p_winner_index
+  where id = p_generation_id and user_id = v_user_id;
+end;
+$$;
+
+revoke all on function public.set_generation_winner(uuid, integer) from public;
+grant execute on function public.set_generation_winner(uuid, integer) to authenticated;
