@@ -7,6 +7,7 @@ import { createClient } from "../../lib/supabase/client";
 import { PLANS, generationLimit, type PlanId } from "../../lib/plans";
 import { scanPolicyRisk, variantText } from "../../lib/policy-check";
 import { PLACEMENTS, type PlacementId } from "../../lib/placements";
+import { buildAdNaming } from "../../lib/ad-naming";
 
 interface Variant {
   hook_style: string;
@@ -20,6 +21,7 @@ interface Variant {
 interface Generation {
   id: string;
   product: string;
+  audience: string | null;
   stage: string;
   tone: string;
   variants: Variant[];
@@ -85,6 +87,72 @@ function PlacementHeadlines({
   );
 }
 
+function AdNamingBlock({
+  product,
+  audience,
+  tone,
+  stage,
+  variant,
+  variantIndex,
+  date,
+  copiedKey,
+  onCopy,
+}: {
+  product: string;
+  audience: string;
+  tone: string;
+  stage: string;
+  variant: Variant;
+  variantIndex: number;
+  date: Date;
+  copiedKey: string;
+  onCopy: (text: string, key: string) => void;
+}) {
+  const naming = buildAdNaming({
+    product,
+    audience,
+    tone,
+    stage,
+    hookStyle: variant.hook_style,
+    variantIndex,
+    date,
+  });
+  const rowId = `${variant.headline}-naming`;
+  const rows: { label: string; value: string }[] = [
+    { label: "Campaign", value: naming.campaignName },
+    { label: "Ad set", value: naming.adSetName },
+    { label: "Ad", value: naming.adName },
+    { label: "UTM", value: naming.utmQuery },
+  ];
+  return (
+    <details className="extra-block">
+      <summary className="extra-summary">Campaign naming &amp; UTM</summary>
+      <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginTop: "10px" }}>
+        {rows.map((row) => {
+          const key = `${rowId}-${row.label}`;
+          return (
+            <div key={row.label} style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              <span className="mono" style={{ fontSize: "11px", color: "var(--paper-45)", width: "76px", flexShrink: 0 }}>
+                {row.label}
+              </span>
+              <span className="mono" style={{ flex: 1, fontSize: "12px", color: "var(--paper)", overflowX: "auto", whiteSpace: "nowrap" }}>
+                {row.value}
+              </span>
+              <button
+                className="btn-outline"
+                style={{ padding: "3px 9px", fontSize: "11px", flexShrink: 0 }}
+                onClick={() => onCopy(row.value, key)}
+              >
+                {copiedKey === key ? "Copied ✓" : "Copy"}
+              </button>
+            </div>
+          );
+        })}
+      </div>
+    </details>
+  );
+}
+
 const TONES = ["Bold & punchy", "Friendly & casual", "Professional", "Luxury & premium", "Urgent / FOMO"];
 const STAGES: { id: string; label: string; heat: "cold" | "warm" | "hot" }[] = [
   { id: "TOF", label: "TOF · Cold", heat: "cold" },
@@ -129,7 +197,7 @@ export default function DashboardPage() {
 
     const { data: rows } = await supabase
       .from("generations")
-      .select("id, product, stage, tone, variants, created_at")
+      .select("id, product, audience, stage, tone, variants, created_at")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false })
       .limit(10);
@@ -316,6 +384,17 @@ export default function DashboardPage() {
                     </p>
                     <PolicyRiskRow variant={v} />
                     <PlacementHeadlines variant={v} copiedKey={copiedKey} onCopy={copyText} />
+                    <AdNamingBlock
+                      product={product}
+                      audience={audience}
+                      tone={tone}
+                      stage={stage}
+                      variant={v}
+                      variantIndex={i + 1}
+                      date={new Date()}
+                      copiedKey={copiedKey}
+                      onCopy={copyText}
+                    />
                   </div>
                 );
               })}
@@ -383,6 +462,17 @@ export default function DashboardPage() {
                           <p>{v.primary_text}</p>
                           <PolicyRiskRow variant={v} />
                           <PlacementHeadlines variant={v} copiedKey={copiedKey} onCopy={copyText} />
+                          <AdNamingBlock
+                            product={g.product}
+                            audience={g.audience ?? ""}
+                            tone={g.tone}
+                            stage={g.stage}
+                            variant={v}
+                            variantIndex={i + 1}
+                            date={new Date(g.created_at)}
+                            copiedKey={copiedKey}
+                            onCopy={copyText}
+                          />
                         </div>
                       );
                     })}

@@ -498,6 +498,36 @@ select.input-field option {
   }
 }
 
+/* ---------- collapsible extras (naming/UTM etc.) ---------- */
+
+.extra-block {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--paper-15);
+}
+
+.extra-summary {
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--paper-45);
+  list-style: none;
+}
+
+.extra-summary::-webkit-details-marker {
+  display: none;
+}
+
+.extra-summary::before {
+  content: "▸ ";
+}
+
+details[open] > .extra-summary::before {
+  content: "▾ ";
+}
+
 /* ---------- policy-risk flags ---------- */
 
 .risk-row {
