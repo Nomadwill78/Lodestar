@@ -39,8 +39,33 @@ const VARIANT_SCHEMA = {
               additionalProperties: false,
             },
           },
+          creative_direction: {
+            type: "object",
+            description:
+              "A shootable visual brief for the creative that would run alongside this copy — what a photographer, designer, or AI image/video tool needs to actually produce the ad matching this variant's specific hook and angle. Not a restatement of the copy.",
+            properties: {
+              shot_type: {
+                type: "string",
+                description: "The specific shot and composition — subject, framing, setting. e.g. 'UGC-style selfie video, talking to camera in a kitchen' not just 'close-up'.",
+              },
+              on_screen_text: {
+                type: "string",
+                description: "The short text overlay on the creative itself, distinct from the ad copy — usually 3-8 words, the visual hook a viewer reads before the copy.",
+              },
+              font_style: {
+                type: "string",
+                description: "The typographic personality for the on-screen text — weight, case, character (e.g. 'bold condensed sans, all caps, white on dark') — a style to pick a font by, not a font name.",
+              },
+              mood: {
+                type: "string",
+                description: "The emotional and visual tone: lighting, color, energy. e.g. 'warm, unstaged morning light' or 'high-energy bold color blocking'.",
+              },
+            },
+            required: ["shot_type", "on_screen_text", "font_style", "mood"],
+            additionalProperties: false,
+          },
         },
-        required: ["hook_style", "headline", "primary_text", "description", "cta", "placements"],
+        required: ["hook_style", "headline", "primary_text", "description", "cta", "placements", "creative_direction"],
         additionalProperties: false,
       },
     },
@@ -143,6 +168,10 @@ export async function POST(request: Request) {
           `headline carrying the same hook and angle as the variant — not the Feed headline cut down ` +
           `to fit — because each placement has a different amount of room and a different reading context:\n` +
           PLACEMENTS.map((p) => `- ${p.id} (max ${p.maxLength} characters): ${p.helper}`).join("\n") +
+          `\n\nFor each variant, also write its creative direction — the visual brief for the shot that ` +
+          `would actually run with this copy. Match it to that variant's specific hook and angle, so the ` +
+          `3 variants get 3 genuinely different visual treatments, not the same shot with different words ` +
+          `on top.` +
           (winnerContext
             ? `\n\nThis account has marked real winners from past tests — copy that actually converted, ` +
               `not just copy that was generated. Let the hook angle, tone, and phrasing patterns below ` +

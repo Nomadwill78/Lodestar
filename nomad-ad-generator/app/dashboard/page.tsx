@@ -9,6 +9,13 @@ import { scanPolicyRisk, variantText } from "../../lib/policy-check";
 import { PLACEMENTS, type PlacementId } from "../../lib/placements";
 import { buildAdNaming } from "../../lib/ad-naming";
 
+interface CreativeDirection {
+  shot_type: string;
+  on_screen_text: string;
+  font_style: string;
+  mood: string;
+}
+
 interface Variant {
   hook_style: string;
   headline: string;
@@ -16,6 +23,7 @@ interface Variant {
   description: string;
   cta: string;
   placements?: { placement: PlacementId; headline: string }[];
+  creative_direction?: CreativeDirection;
 }
 
 interface Generation {
@@ -66,6 +74,34 @@ function WinnerControl({
     >
       {isWinner ? "★ Winner" : "Mark winner"}
     </button>
+  );
+}
+
+function CreativeDirectionBlock({ variant }: { variant: Variant }) {
+  const cd = variant.creative_direction;
+  if (!cd) return null;
+  const rows: { label: string; value: string }[] = [
+    { label: "Shot", value: cd.shot_type },
+    { label: "On-screen text", value: cd.on_screen_text },
+    { label: "Font", value: cd.font_style },
+    { label: "Mood", value: cd.mood },
+  ];
+  return (
+    <div style={{ marginTop: "14px", padding: "14px 16px", borderRadius: "8px", background: "var(--ink-3)", border: "1px solid var(--paper-15)" }}>
+      <div className="mono" style={{ fontSize: "11px", letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--paper-45)", marginBottom: "10px" }}>
+        Creative direction
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+        {rows.map((row) => (
+          <div key={row.label} style={{ display: "flex", gap: "10px" }}>
+            <span className="mono" style={{ fontSize: "11px", color: "var(--paper-45)", width: "104px", flexShrink: 0, textTransform: "uppercase", letterSpacing: "0.03em" }}>
+              {row.label}
+            </span>
+            <span style={{ flex: 1, fontSize: "13px", color: "var(--paper)", lineHeight: 1.5 }}>{row.value}</span>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -433,6 +469,7 @@ export default function DashboardPage() {
                     <p style={{ fontSize: "13px", color: "var(--paper-45)" }}>
                       {v.description} · CTA: <strong>{v.cta}</strong>
                     </p>
+                    <CreativeDirectionBlock variant={v} />
                     <PolicyRiskRow variant={v} />
                     <PlacementHeadlines variant={v} copiedKey={copiedKey} onCopy={copyText} />
                     <AdNamingBlock
@@ -515,6 +552,7 @@ export default function DashboardPage() {
                           </div>
                           <p style={{ fontWeight: 700, color: "var(--paper)", marginBottom: "6px" }}>{v.headline}</p>
                           <p>{v.primary_text}</p>
+                          <CreativeDirectionBlock variant={v} />
                           <PolicyRiskRow variant={v} />
                           <PlacementHeadlines variant={v} copiedKey={copiedKey} onCopy={copyText} />
                           <AdNamingBlock
