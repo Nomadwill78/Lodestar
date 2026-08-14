@@ -1,0 +1,46 @@
+name: Monthly mobile dependency review
+
+on:
+  schedule:
+    - cron: "0 0 14 * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    name: Production dependency audit (${{ matrix.app.name }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        app:
+          - name: Celestial
+            path: Celestial
+          - name: Lodestar mobile
+            path: lodestar/app
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: ${{ matrix.app.path }}/package-lock.json
+
+      - name: Audit production dependencies
+        working-directory: ${{ matrix.app.path }}
+        shell: bash
+        run: |
+          npm audit --omit=dev --json > dependency-audit.json || true
+          node -e 'const fs=require("fs"); const r=JSON.parse(fs.readFileSync("dependency-audit.json","utf8")); const v=r.metadata?.vulnerabilities||{}; const rows=[["Critical",v.critical||0],["High",v.high||0],["Moderate",v.moderate||0],["Low",v.low||0]]; fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, "## Production dependency audit\n\n| Severity | Findings |\n|---|---:|\n" + rows.map(([k,n])=>`| ${k} | ${n} |`).join("\n") + "\n"); if ((v.critical||0)>0) process.exit(1);'
+
+      - name: Upload audit report
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-audit-${{ matrix.app.name }}
+          path: ${{ matrix.app.path }}/dependency-audit.json
+          if-no-files-found: error

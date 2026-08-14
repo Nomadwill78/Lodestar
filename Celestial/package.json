@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "main": "expo-router/entry",
   "scripts": {
-    "start": "expo start",
+    "start": "expo start --localhost",
+    "start:private": "expo start --localhost",
+    "start:lan": "expo start --lan",
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
@@ -13,7 +15,8 @@
     "submit:android": "eas submit --platform android",
     "submit:ios": "eas submit --platform ios",
     "lint": "eslint . --ext .ts,.tsx",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "audit:prod": "npm audit --omit=dev"
   },
   "dependencies": {
     "@expo-google-fonts/inter": "^0.2.3",
