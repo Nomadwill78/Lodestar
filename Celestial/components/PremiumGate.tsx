@@ -78,7 +78,11 @@ const styles = StyleSheet.create({
   },
   preview: { opacity: 0.55 },
   overlay: {
-    ...StyleSheet.absoluteFillObject,
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
     alignItems: 'center',
     justifyContent: 'flex-end',
     padding: Spacing.base,

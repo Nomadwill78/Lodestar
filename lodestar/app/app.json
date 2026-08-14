@@ -7,11 +7,6 @@
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
     "icon": "./assets/icon.png",
-    "splash": {
-      "image": "./assets/vega/splash.png",
-      "backgroundColor": "#0B1026",
-      "resizeMode": "contain"
-    },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.nomad.lodestar"
@@ -31,6 +26,15 @@
     "plugins": [
       "expo-router",
       "expo-secure-store",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/vega/splash.png",
+          "backgroundColor": "#0B1026",
+          "resizeMode": "contain",
+          "imageWidth": 200
+        }
+      ],
       [
         "expo-notifications",
         {
