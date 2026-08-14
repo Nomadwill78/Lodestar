@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import Logo from "../components/Logo";
 import { createClient } from "../../lib/supabase/client";
 import { PLANS, generationLimit, type PlanId } from "../../lib/plans";
@@ -222,6 +223,7 @@ const STAGES: { id: string; label: string; heat: "cold" | "warm" | "hot" }[] = [
 ];
 
 export default function DashboardPage() {
+  const router = useRouter();
   const [product, setProduct] = useState("");
   const [audience, setAudience] = useState("");
   const [tone, setTone] = useState(TONES[0]);
@@ -268,7 +270,10 @@ export default function DashboardPage() {
   }, []);
 
   useEffect(() => {
-    refresh();
+    const loadDashboard = async () => {
+      await refresh();
+    };
+    void loadDashboard();
   }, [refresh]);
 
   async function handleGenerate(e: React.FormEvent) {
@@ -338,7 +343,7 @@ export default function DashboardPage() {
       });
       const data = await res.json();
       if (!res.ok || !data.url) throw new Error(data.error || "Checkout failed");
-      window.location.href = data.url;
+      window.location.assign(data.url);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Checkout failed");
       setUpgrading("");
@@ -347,7 +352,7 @@ export default function DashboardPage() {
 
   async function signOut() {
     await createClient().auth.signOut();
-    window.location.href = "/";
+    router.replace("/");
   }
 
   const limit = generationLimit(plan);
