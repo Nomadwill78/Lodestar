@@ -158,7 +158,7 @@ export default function ProfileScreen() {
     const d = getBirthDate();
     const birthDateStr = d ? toISO(d) : (profile?.birthDate ?? undefined);
     const sunSign = d ? getZodiacSign(d.getMonth() + 1, d.getDate()) : (profile?.sunSign ?? 'Aries');
-    const chart = d ? calculateBirthChart(d, birthTime || undefined, location || undefined) : null;
+    const chart = d ? calculateBirthChart(d, birthTime || undefined) : null;
 
     setSaving(true);
     try {

@@ -7,11 +7,6 @@
     "icon": "./assets/images/icon.png",
     "scheme": "celestial",
     "userInterfaceStyle": "dark",
-    "splash": {
-      "image": "./assets/images/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#0A0514"
-    },
     "assetBundlePatterns": [
       "**/*"
     ],
@@ -23,7 +18,9 @@
         "NSCameraUsageDescription": "Celestial uses your camera for profile photos.",
         "NSPhotoLibraryUsageDescription": "Celestial uses your photo library for profile photos.",
         "NSUserNotificationUsageDescription": "Celestial sends daily horoscope and cosmic event notifications.",
-        "UIBackgroundModes": ["remote-notification"]
+        "UIBackgroundModes": [
+          "remote-notification"
+        ]
       }
     },
     "android": {
@@ -41,8 +38,7 @@
         "VIBRATE",
         "INTERNET",
         "ACCESS_NETWORK_STATE"
-      ],
-
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -66,7 +62,18 @@
           "merchantIdentifier": "merchant.com.celestial.psychicadvisor",
           "enableGooglePay": true
         }
-      ]
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/splash.png",
+          "backgroundColor": "#0A0514",
+          "resizeMode": "contain",
+          "imageWidth": 200
+        }
+      ],
+      "expo-status-bar",
+      "expo-asset"
     ],
     "experiments": {
       "typedRoutes": true,
