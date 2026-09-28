@@ -62,6 +62,41 @@ npx supabase secrets set APP_URL=celestial://
 3. Events: `checkout.session.completed`, `customer.subscription.deleted`, `invoice.payment_failed`
 4. Copy webhook signing secret → set as `STRIPE_WEBHOOK_SECRET`
 
+### Changing prices (runbook)
+
+Stripe Price objects are immutable, so a price change is: create new Prices,
+repoint the secrets, redeploy. The in-app numbers in `lib/stripe.ts` are display
+only — the real charge is whatever Price the secrets point at.
+
+Project ref: `rjucvqthsseegxlwryru` (find it in Supabase → Project Settings → General).
+
+1. **Update the display prices** in `lib/stripe.ts` (and any copy like "Save 33%")
+   so the app matches what you'll charge.
+2. **Create new Price objects** in the Stripe dashboard at the new amounts
+   (recurring, no trial baked in — the 3-day Starseed trial is applied at
+   checkout by the function, not the Price). Copy the two `price_...` IDs.
+3. **Link the CLI** (one time per machine), then point the secrets at the new IDs:
+   ```bash
+   supabase login
+   cd Celestial
+   supabase link --project-ref rjucvqthsseegxlwryru
+   supabase secrets set STRIPE_STARSEED_MONTHLY_PRICE_ID=price_xxx
+   supabase secrets set STRIPE_COSMIC_YEARLY_PRICE_ID=price_yyy
+   supabase secrets list   # confirm the keys are set (values are hidden)
+   ```
+4. **Redeploy** so the functions pick up the new secrets — this is the step that
+   actually makes the change live:
+   ```bash
+   supabase functions deploy stripe-checkout
+   supabase functions deploy advisor
+   ```
+5. **Verify:** in the app, Starseed checkout shows the new monthly price and the
+   button reads "Start 3-Day Free Trial"; Cosmic shows the new annual price.
+
+> Order matters: set secrets **before** redeploying, or the deploy won't have the
+> new values. Existing subscribers keep their original price until they
+> resubscribe — Stripe does not migrate active subscriptions to a new Price.
+
 ---
 
 ## 3. Anthropic (Claude) API
