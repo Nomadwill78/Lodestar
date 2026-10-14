@@ -1,6 +1,9 @@
 # Deploy Celestial's Supabase edge functions (AI readings, Stripe checkout/webhook)
 name: Deploy Supabase Functions
 
+permissions:
+  contents: read
+
 on:
   push:
     branches: ["main"]
