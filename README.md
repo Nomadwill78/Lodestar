@@ -1,1 +1,16 @@
-IyBMb2Rlc3RhciAobW9ub3JlcG8pCgpUaGlzIHJlcG8gaG9sZHMgc2V2ZXJhbCBwcm9qZWN0cyBzaWRlIGJ5IHNpZGUuIFRoZXJlIGlzIG5vIHJvb3QgcGFja2FnZS5qc29uOyBlYWNoIHByb2plY3QgYnVpbGRzIGFuZCBkZXBsb3lzIG9uIGl0cyBvd24uCgojIyBXaGF0IGxpdmVzIGhlcmUKCi0gYGxvZGVzdGFyL2Ag4oCdIExvZGVzdGFyLCBhIG1hbmlmZXN0YXRpb24gcGxhdGZvcm0gZm9yIGVudHJlcHJlbmV1cnMgd2l0aCBhbiBBSSBndWlkZSBjYWxsZWQgVmVnYS4gTGl2ZSBhdCBsb2Rlc3Rhci1ub21hZC52ZXJjZWwuYXBwIGFuZCBmbGlwLW9zLWdhbW1hLnZlcmNlbC5hcHAuCi0gYG5vbWFkLWFkLWdlbmVyYXRvci9gIOKAlCBOb21hZCBDb25zdWx0aW5nIE1ldGEgQWQgQ29weSBHZW5lcmF0b3IgKE5leHQuanMsIFN1cGFiYXNlIGF1dGgsIFN0cmlwZSwgQ2xhdWRlIEFQSSkuIExpdmUgYXQgbm9tYWQtYWQtZ2VuZXJhdG9yLnZlcmNlbC5hcHAuCi0gYENlbGVzdGlhbC9gIOKAlCBDZWxlc3RpYWwsIGFuIEV4cG8gbW9iaWxlIGFwcC4KLSBga2Fsc2hpLXRvb2wvYCDigJ0gS2Fsc2hpIFNhZmUgQmV0cywgYSB3ZWVrbHkgQ0xJIHRoYXQgc2NvcmVzIEthbHNoaSBwcmVkaWN0aW9uIG1hcmtldHMgYW5kIGV4cGxhaW5zIHBpY2tzIHdpdGggQ2xhdWRlLgotIGBjdXJyaWN1bHVtLW1hcmtldGluZy9gIOKAlCBHby10by1tYXJrZXQgbm90ZXMgYW5kIGludmVudG9yeSBmb3IgY3VycmljdWx1bSBwcm9kdWN0cy4KCiMjIE5vdGVzCgotIEVhY2ggc3ViZGlyZWN0b3J5IGlzIHNlbGYtY29udGFpbmVkIHdpdGggaXRzIG93biBjb25maWcgYW5kIGRlcGVuZGVuY2llcy4KLSBSb290LWxldmVsIGRvY3M6IENMQVVERS5tZCwgU0VDVVJJVFkubWQsIFNPT09fT1dORVJfT1BFUkFUSU9OUy5tZC4K
+# Lodestar (monorepo)
+
+This repo holds several projects side by side. There is no root package.json; each project builds and deploys on its own.
+
+## What lives here
+
+- `lodestar/`: Lodestar, a manifestation platform for entrepreneurs with an AI guide called Vega. Live at lodestar-nomad.vercel.app and flip-os-gamma.vercel.app.
+- `nomad-ad-generator/`: Nomad Consulting Meta Ad Copy Generator (Next.js, Supabase auth, Stripe, Claude API). Live at nomad-ad-generator.vercel.app.
+- `Celestial/`: Celestial, an Expo mobile app.
+- `kalshi-tool/`: Kalshi Safe Bets, a weekly CLI that scores Kalshi prediction markets and explains picks with Claude.
+- `curriculum-marketing/`: Go-to-market notes and inventory for curriculum products.
+
+## Notes
+
+- Each subdirectory is self-contained with its own config and dependencies.
+- Root-level docs: CLAUDE.md, SECURITY.md, SOOO_OWNER_OPERATIONS.md.
