@@ -33,6 +33,9 @@ serve(async (req) => {
       userId = user?.id ?? null;
     }
 
+    if (!userId) return json({ error: "Authentication required" }, 401);
+    if (!SUPABASE_URL || !SERVICE_ROLE_KEY) return json({ error: "Advisor is unavailable" }, 503);
+
     // Service-role client bypasses RLS to read the plan and write the counter.
     const admin = SUPABASE_URL && SERVICE_ROLE_KEY ? createClient(SUPABASE_URL, SERVICE_ROLE_KEY) : null;
 
@@ -42,23 +45,25 @@ serve(async (req) => {
     // elapsed we treat usage as reset and stamp this fresh on the next write.
     let periodStart = new Date().toISOString();
     if (userId && admin) {
-      const { data: sub } = await admin
+      const { data: sub, error: subscriptionError } = await admin
         .from('subscriptions')
         .select('plan,status')
         .eq('user_id', userId)
-        .eq('status', 'active')
+        .in('status', ['active', 'trialing'])
         .order('created_at', { ascending: false })
         .limit(1)
         .maybeSingle();
+      if (subscriptionError) return json({ error: 'Advisor is unavailable' }, 503);
       isCosmic = sub?.plan === 'cosmic';
 
       if (!isCosmic) {
-        const { data: usage } = await admin
+        const { data: usage, error: usageError } = await admin
           .from('advisor_usage')
           .select('free_questions_used,free_questions_period_start')
           .eq('user_id', userId)
           .maybeSingle();
 
+        if (usageError) return json({ error: "Advisor is unavailable" }, 503);
         const storedStart = usage?.free_questions_period_start
           ? new Date(usage.free_questions_period_start)
           : null;
@@ -131,7 +136,7 @@ Guidelines:
       used: isCosmic ? null : newUsed,
       remaining: isCosmic ? null : Math.max(0, FREE_LIMIT - newUsed),
     });
-  } catch (err) {
-    return json({ error: (err as Error).message }, 500);
+  } catch {
+    return json({ error: "Unable to reach Celeste" }, 500);
   }
 });

@@ -19,23 +19,14 @@ jobs:
           echo "Website HTTP status: $code"
           [ "$code" = "200" ] || { echo "::error::Website is not returning 200"; exit 1; }
 
-      - name: AI horoscope generates a reading
+      - name: Anonymous AI calls are rejected
         run: |
-          resp=$(curl -s --max-time 60 -X POST "$SUPA/functions/v1/horoscope" \
-            -H "Authorization: Bearer $ANON" -H "apikey: $ANON" -H "Content-Type: application/json" \
-            -d '{"sign":"aries","period":"today","category":"general"}')
-          echo "Response: $resp"
-          echo "$resp" | jq -e '.text and (.text | contains("try again") | not)' > /dev/null \
-            || { echo "::error::Horoscope function did not return AI text — is ANTHROPIC_API_KEY set?"; exit 1; }
-
-      - name: Ask Celeste advisor responds
-        run: |
-          resp=$(curl -s --max-time 60 -X POST "$SUPA/functions/v1/advisor" \
-            -H "Authorization: Bearer $ANON" -H "apikey: $ANON" -H "Content-Type: application/json" \
-            -d '{"messages":[{"role":"user","content":"What does my week look like?"}],"userContext":{"name":"Test","sunSign":"Leo"}}')
-          echo "Response: $resp"
-          echo "$resp" | jq -e '.text and (.text | contains("try again") | not)' > /dev/null \
-            || { echo "::error::Advisor function did not return AI text"; exit 1; }
+          for endpoint in horoscope advisor birth-chart compatibility; do
+            code=$(curl -s --max-time 30 -o /dev/null -w "%{http_code}" -X POST "$SUPA/functions/v1/$endpoint" \
+              -H "Authorization: Bearer $ANON" -H "apikey: $ANON" -H "Content-Type: application/json" \
+              -d '{"sign":"aries","category":"general","messages":[]}')
+            [ "$code" = "401" ] || { echo "::error::$endpoint accepted an anonymous caller (HTTP $code)"; exit 1; }
+          done
 
       - name: Webhook rejects forged events
         run: |
