@@ -1,3 +1,5 @@
+> **Backend deployment authority:** `Nomadwill78/Lodestar`, directory `Celestial/`, is the only authorized source for this shared Supabase backend. Do not deploy functions from the standalone `celestial` repository. Merge its workflow retirement before merging the authoritative backend update. Remove the obsolete standalone Supabase deployment secret during rollout.
+
 # Celestial — Deployment Guide
 
 ## Overview

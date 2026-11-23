@@ -27,7 +27,7 @@ export default function AdvisorScreen() {
   const [loading, setLoading] = useState(false);
   const [freeUsed, setFreeUsed] = useState(0);
   const [quotaLoaded, setQuotaLoaded] = useState(false);
-  const scrollRef = useRef<ScrollView>(null);
+  const scrollRef = useRef<React.ComponentRef<typeof ScrollView>>(null);
   const { profile } = useProfile();
   const { isCosmic } = usePremiumFeature('advisor');
   const router = useRouter();

@@ -81,8 +81,8 @@ export default function ProfileScreen() {
   const [saving, setSaving] = useState(false);
   const [editError, setEditError] = useState('');
 
-  const dayRef = useRef<TextInput>(null);
-  const yearRef = useRef<TextInput>(null);
+  const dayRef = useRef<React.ComponentRef<typeof TextInput>>(null);
+  const yearRef = useRef<React.ComponentRef<typeof TextInput>>(null);
 
   const [portalError, setPortalError] = useState('');
   const [openingPortal, setOpeningPortal] = useState(false);

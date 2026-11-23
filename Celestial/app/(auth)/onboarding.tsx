@@ -126,8 +126,8 @@ export default function OnboardingScreen() {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
-  const dayRef = useRef<TextInput>(null);
-  const yearRef = useRef<TextInput>(null);
+  const dayRef = useRef<React.ComponentRef<typeof TextInput>>(null);
+  const yearRef = useRef<React.ComponentRef<typeof TextInput>>(null);
 
   const zodiacScale = useSharedValue(0);
   const zodiacOpacity = useSharedValue(0);
