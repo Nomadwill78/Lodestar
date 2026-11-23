@@ -41,5 +41,10 @@
     "@babel/core": "^7.24.0",
     "@types/react": "~19.3.0"
   },
-  "private": true
+  "private": true,
+  "overrides": {
+    "@expo/fingerprint": {
+      "minimatch": "^11.0.1"
+    }
+  }
 }
