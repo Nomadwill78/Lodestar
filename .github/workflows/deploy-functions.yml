@@ -35,4 +35,4 @@ jobs:
         working-directory: Celestial
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-        run: supabase functions deploy --project-ref rjucvqthsseegxlwryru
+        run: supabase functions deploy --remote=rjucvqthsseegxlwryru --yes
